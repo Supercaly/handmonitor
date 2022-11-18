@@ -6,19 +6,36 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Handler
+import android.os.HandlerThread
 import android.util.Log
 
-class SensorListener(
+/**
+ * A listener for sensors values in a dedicate thread.
+ *
+ * This class listen periodically to samples produced by the
+ * sensors in the Android device like accelerometer and gyroscope
+ * in his own dedicated thread and pass them to a shared [SensorsData].
+ *
+ * @property[mSensorsData] The values produced are passed to a shared [SensorsData].
+ * @constructor Crates an instance of [SensorsListenerThread] with given [Context]
+ * and [SensorsData]; when constructed the internal thread is started immediately,
+ * but the sensors data are collected only after a call to [startListening].
+ */
+class SensorsListenerThread(
     ctx: Context,
-    private val mHandler: Handler,
     private val mSensorsData: SensorsData
 ) : SensorEventListener {
     companion object {
-        private const val TAG = "SensorListener"
+        private const val TAG = "SensorsListenerThread"
         private const val SAMPLING_PERIOD_US = 20_000
         private const val MAX_LATENCY_US = 2_000_000
     }
 
+    // Thread mechanics
+    private val mHandler: Handler
+    private val mThread: HandlerThread
+
+    // Sensor manager and sensors
     private val mSensorManager: SensorManager
     private var mAccSensor: Sensor? = null
     private var mGyroSensor: Sensor? = null
@@ -34,9 +51,20 @@ class SensorListener(
         if (mGyroSensor == null) {
             Log.e(TAG, "onCreate: Gyroscope sensor is not supported!")
         }
+
+        mThread = HandlerThread(TAG).apply {
+            start()
+            mHandler = Handler(looper)
+        }
     }
 
+    /**
+     * Start listening to sensors events.
+     *
+     * @see [stopListening].
+     */
     fun startListening() {
+        // TODO: Fail if the internal thread is not started
         mSensorManager.registerListener(
             this,
             mAccSensor,
@@ -53,8 +81,19 @@ class SensorListener(
         )
     }
 
+    /**
+     * Stop listening to sensors events.
+     *
+     * This method stops listening to new sensors events
+     * and interrupts the internal thread. This meas that
+     * after calling this method successive calls to [startListening]
+     * will fail.
+     *
+     * @see [startListening].
+     */
     fun stopListening() {
         mSensorManager.unregisterListener(this)
+        mThread.quitSafely()
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
