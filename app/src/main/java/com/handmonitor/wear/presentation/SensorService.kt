@@ -21,11 +21,7 @@ class SensorService : Service() {
     private lateinit var mSensorsListenerThread: SensorsListenerThread
     private lateinit var mConsumerThread: Thread
     private lateinit var mSensorsConsumer: SensorsConsumerRn
-    private val mDo: SensorsConsumer = object : SensorsConsumer {
-        override fun onNewData(data: FloatArray) {
-            Log.d(TAG, "done: ciao ${data.size}")
-        }
-    }
+    private lateinit var mGesturePredictor: GesturePredictor
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -35,7 +31,8 @@ class SensorService : Service() {
         Log.i(TAG, "onCreate: Service created!")
         mSensorsData = SensorsData()
         mSensorsListenerThread = SensorsListenerThread(this, mSensorsData)
-        mSensorsConsumer = SensorsConsumerRn(mSensorsData, mDo)
+        mGesturePredictor = GesturePredictor(this)
+        mSensorsConsumer = SensorsConsumerRn(mSensorsData, mGesturePredictor)
         mConsumerThread = Thread(mSensorsConsumer, SensorsConsumerRn.threadName)
     }
 
