@@ -28,7 +28,7 @@ class SensorsListenerThread(
     companion object {
         private const val TAG = "SensorsListenerThread"
         private const val SAMPLING_PERIOD_US = 20_000
-        private const val MAX_LATENCY_US = 2_000_000
+        private const val MAX_LATENCY_US = 2_500_000
     }
 
     // Thread mechanics
@@ -107,6 +107,6 @@ class SensorsListenerThread(
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        Log.d(TAG, "onAccuracyChanged: Changed accuracy of sensor '${sensor?.name}' to $accuracy")
+        Log.i(TAG, "onAccuracyChanged: Changed accuracy of sensor '${sensor?.name}' to $accuracy")
     }
 }

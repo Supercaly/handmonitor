@@ -14,7 +14,7 @@ import java.util.concurrent.Semaphore
  */
 class SensorsData {
     companion object {
-        const val SAMPLING_WINDOW_SIZE = 100
+        const val SAMPLING_WINDOW_SIZE = 125
         const val SENSORS_LIST_SIZE = SAMPLING_WINDOW_SIZE * 3
     }
 
