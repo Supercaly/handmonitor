@@ -1,4 +1,4 @@
-package com.handmonitor.wear.presentation
+package com.handmonitor.wear.sensors
 
 import android.content.Context
 import android.hardware.Sensor

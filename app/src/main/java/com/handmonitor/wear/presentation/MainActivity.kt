@@ -23,6 +23,7 @@ import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import com.handmonitor.wear.R
+import com.handmonitor.wear.sensors.SensorService
 import com.handmonitor.wear.presentation.theme.HandMonitorTheme
 
 class MainActivity : ComponentActivity() {

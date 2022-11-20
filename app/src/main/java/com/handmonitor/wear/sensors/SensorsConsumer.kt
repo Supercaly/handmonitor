@@ -1,4 +1,4 @@
-package com.handmonitor.wear.presentation
+package com.handmonitor.wear.sensors
 
 import android.util.Log
 

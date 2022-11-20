@@ -22,7 +22,6 @@
         <activity
             android:name=".presentation.MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@android:style/Theme.DeviceDefault">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -36,7 +35,7 @@
         </activity>
 
         <service
-            android:name=".presentation.SensorService"
+            android:name=".sensors.SensorService"
             android:description="@string/service_description"
             android:exported="false" />
     </application>

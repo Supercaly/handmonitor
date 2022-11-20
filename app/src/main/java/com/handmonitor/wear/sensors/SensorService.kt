@@ -1,9 +1,10 @@
-package com.handmonitor.wear.presentation
+package com.handmonitor.wear.sensors
 
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
+import com.handmonitor.wear.prediction.GesturePredictor
 
 /**
  * Android Service to process sensor data.

@@ -1,7 +1,8 @@
-package com.handmonitor.wear.presentation
+package com.handmonitor.wear.prediction
 
 import android.content.Context
 import android.util.Log
+import com.handmonitor.wear.sensors.SensorsConsumer
 
 class GesturePredictor(ctx: Context) : SensorsConsumer {
     companion object {
