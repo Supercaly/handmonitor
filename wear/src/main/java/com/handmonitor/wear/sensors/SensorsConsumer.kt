@@ -60,18 +60,12 @@ class SensorsConsumerRn(
     }
 
     override fun run() {
-        var time = System.currentTimeMillis()
         while (!Thread.currentThread().isInterrupted) {
             try {
-                // TODO: Finish implementing this class.
+                // Get the new data and pass it to SensorsConsumer implementation
                 mConsumer.onNewData(mData.getData())
-                Log.i(
-                    TAG, "run: ${Thread.currentThread().name}: " +
-                            "Got data in ${System.currentTimeMillis() - time}"
-                )
-                time = System.currentTimeMillis()
             } catch (ie: InterruptedException) {
-                ie.printStackTrace()
+                Log.d(TAG, "run: $threadName stopped!")
                 Thread.currentThread().interrupt()
             }
         }

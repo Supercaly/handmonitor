@@ -23,6 +23,7 @@ class GesturePredictor(ctx: Context) : SensorsConsumer {
 
     override fun onNewData(data: FloatArray) {
         val predictedLabel = mDetectorHelper.predict(data)
+        // TODO: Finish implementing this method.
         Log.d(TAG, "onNewData: Predicted class '$predictedLabel'")
     }
 }

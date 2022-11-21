@@ -2,6 +2,7 @@ package com.handmonitor.wear.prediction
 
 import android.content.Context
 import android.util.Log
+import com.handmonitor.wear.data.Label
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.gpu.CompatibilityList
 import org.tensorflow.lite.gpu.GpuDelegate
@@ -59,9 +60,9 @@ class GestureDetectorHelper(
      *
      * @param[input] A [FloatArray] with raw accelerometer and
      * gyroscope data.
-     * @return The predicted label.
+     * @return The predicted [Label].
      */
-    fun predict(input: FloatArray): Int {
+    fun predict(input: FloatArray): Label {
         val inputBuffer = FloatBuffer.wrap(input)
         val outputBuffer = FloatBuffer.allocate(6)
 
@@ -89,9 +90,9 @@ class GestureDetectorHelper(
      * Returns the label form an output array.
      *
      * @param[out] The output arras as a [FloatBuffer].
-     * @return The predicted label.
+     * @return The predicted [Label].
      */
-    private fun getLabel(out: FloatBuffer): Int {
+    private fun getLabel(out: FloatBuffer): Label {
         var maxValue = out[0]
         var maxIdx = 0
         for (i in 1 until out.capacity()) {
@@ -100,6 +101,7 @@ class GestureDetectorHelper(
                 maxIdx = i
             }
         }
-        return maxIdx
+        // FIXME: Return the correct label based on the predicted value
+        return Label.OTHER
     }
 }
