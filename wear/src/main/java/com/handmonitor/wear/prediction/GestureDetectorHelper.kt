@@ -46,13 +46,13 @@ class GestureDetectorHelper(
         }
         mInterpreter = Interpreter(model, options)
 
-        Log.i(TAG, "init: loaded model '$mModelName'")
-        Log.i(TAG, "init: input")
-        Log.i(TAG, "init: \tshape: ${Arrays.toString(mInterpreter.getInputTensor(0).shape())}")
-        Log.i(TAG, "init: \ttype: ${mInterpreter.getInputTensor(0).dataType()}")
-        Log.i(TAG, "init: output")
-        Log.i(TAG, "init: \tshape: ${Arrays.toString(mInterpreter.getOutputTensor(0).shape())}")
-        Log.i(TAG, "init: \ttype: ${mInterpreter.getOutputTensor(0).dataType()}")
+        Log.d(TAG, "init: loaded model '$mModelName'")
+        Log.d(TAG, "init: input")
+        Log.d(TAG, "init: \tshape: ${Arrays.toString(mInterpreter.getInputTensor(0).shape())}")
+        Log.d(TAG, "init: \ttype: ${mInterpreter.getInputTensor(0).dataType()}")
+        Log.d(TAG, "init: output")
+        Log.d(TAG, "init: \tshape: ${Arrays.toString(mInterpreter.getOutputTensor(0).shape())}")
+        Log.d(TAG, "init: \ttype: ${mInterpreter.getOutputTensor(0).dataType()}")
     }
 
     /**

@@ -29,7 +29,7 @@ class SensorService : Service() {
     }
 
     override fun onCreate() {
-        Log.i(TAG, "onCreate: Service created!")
+        Log.d(TAG, "onCreate: Service created!")
         mSensorsData = SensorsData()
         mSensorsListenerThread = SensorsListenerThread(this, mSensorsData)
         mGesturePredictor = GesturePredictor(this)
@@ -38,14 +38,14 @@ class SensorService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.i(TAG, "onStartCommand: Service started!")
+        Log.d(TAG, "onStartCommand: Service started!")
         mSensorsListenerThread.startListening()
         mConsumerThread.start()
         return START_STICKY
     }
 
     override fun onDestroy() {
-        Log.i(TAG, "onDestroy: Service stopped!")
+        Log.d(TAG, "onDestroy: Service stopped!")
         mSensorsListenerThread.stopListening()
         mConsumerThread.interrupt()
     }

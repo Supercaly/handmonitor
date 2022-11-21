@@ -66,6 +66,7 @@ class SensorsListenerThread(
      */
     fun startListening() {
         // FIXME: Fail if the internal thread is not started.
+        // FIXME: Calls to registerListener could fail if the sensor is not supported
         mSensorManager.registerListener(
             this,
             mAccSensor,
