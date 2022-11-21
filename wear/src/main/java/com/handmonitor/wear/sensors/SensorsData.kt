@@ -14,7 +14,8 @@ import java.util.concurrent.Semaphore
  */
 class SensorsData {
     companion object {
-        const val SAMPLING_WINDOW_SIZE = 125
+        // TODO: Extract the sampling window size outside this class to be more customizable.
+        const val SAMPLING_WINDOW_SIZE = 128
         const val SENSORS_LIST_SIZE = SAMPLING_WINDOW_SIZE * 3
     }
 
@@ -40,7 +41,7 @@ class SensorsData {
      * @throws InterruptedException in case the thread waiting is terminated.
      */
     fun putAcc(acc: FloatArray) {
-        // WARNING: this function assumes it's only called by one thread at a time.
+        // FIXME: This function assumes it's only called by one thread at a time.
         mAccArray[mAccIdx + 0] = acc[0]
         mAccArray[mAccIdx + 1] = acc[1]
         mAccArray[mAccIdx + 2] = acc[2]
@@ -60,7 +61,7 @@ class SensorsData {
      * @throws InterruptedException in case the thread waiting is terminated.
      */
     fun putGyro(gyro: FloatArray) {
-        // WARNING: this function assumes it's only called by one thread at a time.
+        // FIXME: This function assumes it's only called by one thread at a time.
         mGyrArray[mGyrIdx + 0] = gyro[0]
         mGyrArray[mGyrIdx + 1] = gyro[1]
         mGyrArray[mGyrIdx + 2] = gyro[2]
@@ -86,7 +87,18 @@ class SensorsData {
         // Wait for all data to be produced
         mGetSemaphore.acquire()
         // Copy data to a thread-safe buffer
-        val buffer = mAccArray.clone()
+        // FIXME: Replace this array copy with a more performant solution
+        //  Instead of managing two internal arrays and merging them every time
+        //  evaluate if it's better to have only one and simply cloning it here.
+        val buffer = FloatArray(SAMPLING_WINDOW_SIZE * 6) { 0.0f }
+        for (i in 0 until SAMPLING_WINDOW_SIZE * 3 step 3) {
+            buffer[i * 2 + 0] = mAccArray[i + 0]
+            buffer[i * 2 + 1] = mAccArray[i + 1]
+            buffer[i * 2 + 2] = mAccArray[i + 2]
+            buffer[i * 2 + 3] = mGyrArray[i + 0]
+            buffer[i * 2 + 4] = mGyrArray[i + 1]
+            buffer[i * 2 + 5] = mGyrArray[i + 2]
+        }
         // Notify producer that we are done copying
         mPutSemaphore.release()
         return buffer
