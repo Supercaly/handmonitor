@@ -63,7 +63,7 @@ class SensorsConsumerRn(
         var time = System.currentTimeMillis()
         while (!Thread.currentThread().isInterrupted) {
             try {
-                // TODO: Fix this function
+                // TODO: Finish implementing this class.
                 mConsumer.onNewData(mData.getData())
                 Log.i(
                     TAG, "run: ${Thread.currentThread().name}: " +

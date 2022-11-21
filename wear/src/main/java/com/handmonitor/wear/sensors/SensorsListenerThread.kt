@@ -28,6 +28,7 @@ class SensorsListenerThread(
     companion object {
         private const val TAG = "SensorsListenerThread"
         private const val SAMPLING_PERIOD_US = 20_000
+        // TODO: Extract max latency outside of this class and make it depend of the sampling size.
         private const val MAX_LATENCY_US = 2_500_000
     }
 
@@ -64,7 +65,7 @@ class SensorsListenerThread(
      * @see [stopListening].
      */
     fun startListening() {
-        // TODO: Fail if the internal thread is not started
+        // FIXME: Fail if the internal thread is not started.
         mSensorManager.registerListener(
             this,
             mAccSensor,
