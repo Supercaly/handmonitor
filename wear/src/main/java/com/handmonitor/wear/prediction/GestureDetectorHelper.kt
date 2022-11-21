@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.gpu.CompatibilityList
+import org.tensorflow.lite.gpu.GpuDelegate
 import java.io.FileInputStream
 import java.nio.FloatBuffer
 import java.nio.MappedByteBuffer
@@ -21,19 +22,27 @@ class GestureDetectorHelper(
     private val mInterpreter: Interpreter
 
     init {
+        // Load tflite model and init the interpreter
         val model = loadModel(ctx)
         val compatList = CompatibilityList()
         val options = Interpreter.Options().apply {
             if (compatList.isDelegateSupportedOnThisDevice) {
-                // TODO: Manage GPU support
                 val delegateOptions = compatList.bestOptionsForThisDevice
-                //this.addDelegate(GpuDelegate(delegateOptions))
-                Log.e(TAG, "Using GPU acceleration!")
+                this.addDelegate(GpuDelegate(delegateOptions))
+                Log.i(TAG, "init: Using GPU acceleration!")
             } else {
-                Log.e(TAG, "GPU Delegate not supported on this device!")
+                Log.i(TAG, "init: GPU acceleration not supported on this device!")
             }
         }
         mInterpreter = Interpreter(model, options)
+
+        Log.i(TAG, "init: loaded model '$mModelName'")
+        Log.i(TAG, "init: input")
+        Log.i(TAG, "init: \tshape: ${Arrays.toString(mInterpreter.getInputTensor(0).shape())}")
+        Log.i(TAG, "init: \ttype: ${mInterpreter.getInputTensor(0).dataType()}")
+        Log.i(TAG, "init: output")
+        Log.i(TAG, "init: \tshape: ${Arrays.toString(mInterpreter.getOutputTensor(0).shape())}")
+        Log.i(TAG, "init: \ttype: ${mInterpreter.getOutputTensor(0).dataType()}")
     }
 
     private fun loadModel(ctx: Context): MappedByteBuffer {

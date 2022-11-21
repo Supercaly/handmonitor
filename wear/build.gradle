@@ -60,6 +60,7 @@ dependencies {
 
     implementation "org.tensorflow:tensorflow-lite:$tflite_version"
     implementation "org.tensorflow:tensorflow-lite-gpu:$tflite_version"
+    implementation "org.tensorflow:tensorflow-lite-gpu-api:$tflite_version"
 
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
