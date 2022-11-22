@@ -2,6 +2,8 @@ package com.handmonitor.wear.sensors
 
 import android.app.Service
 import android.content.Intent
+import android.os.Handler
+import android.os.HandlerThread
 import android.os.IBinder
 import android.util.Log
 import com.handmonitor.wear.prediction.GesturePredictor
@@ -18,10 +20,16 @@ class SensorService : Service() {
         private const val TAG = "SensorService"
     }
 
+    // Sensors collection stuff
     private lateinit var mSensorsData: SensorsData
-    private lateinit var mSensorsListenerThread: SensorsListenerThread
-    private lateinit var mConsumerThread: Thread
     private lateinit var mSensorsConsumer: SensorsConsumerRn
+    private lateinit var mSensorsListener: SensorsListener
+
+    // External Threads
+    private lateinit var mCollectorThread: HandlerThread
+    private lateinit var mConsumerThread: Thread
+
+    // Inference stuff
     private lateinit var mGesturePredictor: GesturePredictor
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -31,7 +39,12 @@ class SensorService : Service() {
     override fun onCreate() {
         Log.d(TAG, "onCreate: Service created!")
         mSensorsData = SensorsData()
-        mSensorsListenerThread = SensorsListenerThread(this, mSensorsData)
+        mCollectorThread = HandlerThread(SensorsListener.threadName).apply { start() }
+        mSensorsListener = SensorsListener(
+            this,
+            mSensorsData,
+            Handler(mCollectorThread.looper)
+        )
         mGesturePredictor = GesturePredictor(this)
         mSensorsConsumer = SensorsConsumerRn(mSensorsData, mGesturePredictor)
         mConsumerThread = Thread(mSensorsConsumer, SensorsConsumerRn.threadName)
@@ -39,14 +52,15 @@ class SensorService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand: Service started!")
-        mSensorsListenerThread.startListening()
+        mSensorsListener.startListening()
         mConsumerThread.start()
         return START_STICKY
     }
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy: Service stopped!")
-        mSensorsListenerThread.stopListening()
+        mSensorsListener.stopListening()
         mConsumerThread.interrupt()
+        mCollectorThread.quit()
     }
 }

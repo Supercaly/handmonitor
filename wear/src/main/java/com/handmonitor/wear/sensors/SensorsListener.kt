@@ -16,25 +16,29 @@ import android.util.Log
  * sensors in the Android device like accelerometer and gyroscope
  * in his own dedicated thread and pass them to a shared [SensorsData].
  *
+ * The user must start and stop the separate thread by his own and then
+ * create a [Handler] that will offload all the work. The internal Android
+ * [SensorEventListener] will post a new message for each senor event so it's
+ * suggested to use a [HandlerThread] for automatically manage those works.
+ *
  * @property[mSensorsData] The values produced are passed to a shared [SensorsData].
- * @constructor Crates an instance of [SensorsListenerThread] with given [Context]
- * and [SensorsData]; when constructed the internal thread is started immediately,
- * but the sensors data are collected only after a call to [startListening].
+ * @property[mHandler] The [Handler] for the separate [Thread].
+ * @constructor Crates an instance of [SensorsListener] with given [Context],
+ * [SensorsData] and [Handler].
  */
-class SensorsListenerThread(
+class SensorsListener(
     ctx: Context,
-    private val mSensorsData: SensorsData
+    private val mSensorsData: SensorsData,
+    private val mHandler: Handler
 ) : SensorEventListener {
     companion object {
-        private const val TAG = "SensorsListenerThread"
+        const val threadName = "SensorsListenerThread"
+        private const val TAG = "SensorsListener"
         private const val SAMPLING_PERIOD_US = 20_000
+
         // TODO: Extract max latency outside of this class and make it depend of the sampling size.
         private const val MAX_LATENCY_US = 2_500_000
     }
-
-    // Thread mechanics
-    private val mHandler: Handler
-    private val mThread: HandlerThread
 
     // Sensor manager and sensors
     private val mSensorManager: SensorManager
@@ -52,11 +56,6 @@ class SensorsListenerThread(
         if (mGyroSensor == null) {
             Log.e(TAG, "onCreate: Gyroscope sensor is not supported!")
         }
-
-        mThread = HandlerThread(TAG).apply {
-            start()
-            mHandler = Handler(looper)
-        }
     }
 
     /**
@@ -65,37 +64,33 @@ class SensorsListenerThread(
      * @see [stopListening].
      */
     fun startListening() {
-        // FIXME: Fail if the internal thread is not started.
-        // FIXME: Calls to registerListener could fail if the sensor is not supported
-        mSensorManager.registerListener(
-            this,
-            mAccSensor,
-            SAMPLING_PERIOD_US,
-            MAX_LATENCY_US,
-            mHandler
-        )
-        mSensorManager.registerListener(
-            this,
-            mGyroSensor,
-            SAMPLING_PERIOD_US,
-            MAX_LATENCY_US,
-            mHandler
-        )
+        if (mAccSensor != null) {
+            mSensorManager.registerListener(
+                this,
+                mAccSensor,
+                SAMPLING_PERIOD_US,
+                MAX_LATENCY_US,
+                mHandler
+            )
+        }
+        if (mGyroSensor != null) {
+            mSensorManager.registerListener(
+                this,
+                mGyroSensor,
+                SAMPLING_PERIOD_US,
+                MAX_LATENCY_US,
+                mHandler
+            )
+        }
     }
 
     /**
      * Stop listening to sensors events.
      *
-     * This method stops listening to new sensors events
-     * and interrupts the internal thread. This meas that
-     * after calling this method successive calls to [startListening]
-     * will fail.
-     *
      * @see [startListening].
      */
     fun stopListening() {
         mSensorManager.unregisterListener(this)
-        mThread.quitSafely()
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
