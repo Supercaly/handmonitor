@@ -1,9 +1,6 @@
-package com.handmonitor.wear
+package com.handmonitor.wear.sensors
 
 import android.util.Log
-import com.handmonitor.wear.sensors.SensorsConsumer
-import com.handmonitor.wear.sensors.SensorsConsumerRn
-import com.handmonitor.wear.sensors.SensorsData
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -16,7 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 class SensorsConsumerTest {
     @MockK
     private lateinit var mSensorsData: SensorsData
-    private val mMockData = floatArrayOf(0.0f, 1.1f, 2.2f, 3.3f)
 
     @BeforeEach
     fun setup() {
@@ -25,31 +21,19 @@ class SensorsConsumerTest {
     }
 
     @Test
-    fun verify_onNewData_called() {
-        every { mSensorsData.getData() } returns floatArrayOf()
-        val impl = object : SensorsConsumer {
-            override fun onNewData(data: FloatArray) {
-                throw InterruptedException()
-            }
-        }
-        val runnable = SensorsConsumerRn(mSensorsData, impl)
-        runnable.run()
-        verify {
-            mSensorsData.getData()
-        }
-    }
+    fun `onNewData called when new data is ready`() {
+        val mockData = floatArrayOf(0.0f, 1.1f, 2.2f, 3.3f)
+        every { mSensorsData.getData() } returns mockData
 
-    @Test
-    fun verify_onNewData_calledWithData() {
-        every { mSensorsData.getData() } returns mMockData
         val impl = object : SensorsConsumer {
             override fun onNewData(data: FloatArray) {
-                assertEquals(data, mMockData)
+                assertEquals(mockData, data)
                 throw InterruptedException()
             }
         }
         val runnable = SensorsConsumerRn(mSensorsData, impl)
         runnable.run()
+
         verify {
             mSensorsData.getData()
         }

@@ -1,4 +1,4 @@
-package com.handmonitor.wear
+package com.handmonitor.wear.sensors
 
 import android.content.Context
 import android.hardware.Sensor
@@ -6,8 +6,6 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Handler
 import android.util.Log
-import com.handmonitor.wear.sensors.SensorsData
-import com.handmonitor.wear.sensors.SensorsListener
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -52,7 +50,7 @@ class SensorsListenerTest {
     }
 
     @Test
-    fun init_withAllSensors() {
+    fun `init when all sensors are supported`() {
         SensorsListener(mContext, mSensorsData, mHandler)
         verifyAll {
             mContext.getSystemService(Context.SENSOR_SERVICE)
@@ -62,19 +60,18 @@ class SensorsListenerTest {
     }
 
     @Test
-    fun init_withMissingSensors() {
+    fun `init when some sensor is not supported`() {
         every { mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) } returns null
         SensorsListener(mContext, mSensorsData, mHandler)
         verifyAll {
             mContext.getSystemService(Context.SENSOR_SERVICE)
             mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
             mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
-            Log.e(any(), any())
         }
     }
 
     @Test
-    fun startListening_startsSensors() {
+    fun `startListening starts listening to sensors`() {
         SensorsListener(mContext, mSensorsData, mHandler).startListening()
         verify(exactly = 2) {
             mSensorManager.registerListener(any(), any(), any(), any(), any())
@@ -82,7 +79,7 @@ class SensorsListenerTest {
     }
 
     @Test
-    fun startListening_withNotSupportedSensors() {
+    fun `startListening starts listening to supported sensors`() {
         every { mSensorManager.getDefaultSensor(any()) } returns null
         SensorsListener(mContext, mSensorsData, mHandler).startListening()
         verify(inverse = true) {
@@ -91,7 +88,7 @@ class SensorsListenerTest {
     }
 
     @Test
-    fun stopListening_stopsSensors() {
+    fun `stopListening stops listening to sensors`() {
         val l = SensorsListener(mContext, mSensorsData, mHandler)
         every { mSensorManager.unregisterListener(any<SensorEventListener>()) } returns Unit
         l.stopListening()
