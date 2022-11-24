@@ -2,6 +2,7 @@ package com.handmonitor.wear.prediction
 
 import android.content.Context
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import com.handmonitor.wear.data.Label
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.gpu.CompatibilityList
@@ -17,23 +18,64 @@ import java.util.*
  *
  * This class is an helper class for tflite.
  *
- * @property[mModelName] Name of the model to use for inference.
  * @constructor Creates an instance of [GestureDetectorHelper] with
  * given [Context] and model name.
  */
-class GestureDetectorHelper(
-    ctx: Context,
-    private val mModelName: String
-) {
+class GestureDetectorHelper {
     companion object {
         private const val TAG = "GestureDetectorHelper"
+
+        /**
+         * Loads a model with given [modelName] to a
+         * [MappedByteBuffer].
+         *
+         * @param[ctx] A [Context] used to access assets folder.
+         * @return A [MappedByteBuffer] with model data.
+         */
+        private fun loadModel(ctx: Context, modelName: String): MappedByteBuffer {
+            val fd = ctx.assets.openFd(modelName)
+            val stream = FileInputStream(fd.fileDescriptor)
+            val channel = stream.channel
+            val startOffset = fd.startOffset
+            val declareLength = fd.declaredLength
+            return channel.map(FileChannel.MapMode.READ_ONLY, startOffset, declareLength)
+        }
+
+        /**
+         * Returns the label from an output array.
+         *
+         * @param[out] The output arras as a [FloatBuffer].
+         * @return The predicted [Label].
+         */
+        private fun getLabel(out: FloatBuffer): Label {
+            var maxValue = out[0]
+            var maxIdx = 0
+            for (i in 1 until out.capacity()) {
+                if (out[i] > maxValue) {
+                    maxValue = out[i]
+                    maxIdx = i
+                }
+            }
+            return when (maxIdx) {
+                1 -> Label.WASHING
+                2 -> Label.RUBBING
+                else -> Label.OTHER
+            }
+        }
     }
 
     private val mInterpreter: Interpreter
 
-    init {
+    /**
+     * Constructs an instance of [GestureDetectorHelper] with
+     * given [Context] and model name.
+     *
+     * @param[ctx] The [Context] to use.
+     * @param[modelName] The name of the model to load.
+     */
+    constructor(ctx: Context, modelName: String) {
         // Load tflite model and init the interpreter
-        val model = loadModel(ctx)
+        val model = loadModel(ctx, modelName)
         val compatList = CompatibilityList()
         val options = Interpreter.Options().apply {
             if (compatList.isDelegateSupportedOnThisDevice) {
@@ -46,13 +88,24 @@ class GestureDetectorHelper(
         }
         mInterpreter = Interpreter(model, options)
 
-        Log.d(TAG, "init: loaded model '$mModelName'")
+        Log.d(TAG, "init: loaded model '$modelName'")
         Log.d(TAG, "init: input")
         Log.d(TAG, "init: \tshape: ${Arrays.toString(mInterpreter.getInputTensor(0).shape())}")
         Log.d(TAG, "init: \ttype: ${mInterpreter.getInputTensor(0).dataType()}")
         Log.d(TAG, "init: output")
         Log.d(TAG, "init: \tshape: ${Arrays.toString(mInterpreter.getOutputTensor(0).shape())}")
         Log.d(TAG, "init: \ttype: ${mInterpreter.getOutputTensor(0).dataType()}")
+    }
+
+    /**
+     * Constructs an instance of [GestureDetectorHelper] with
+     * a pre-created [Interpreter].
+     *
+     * @param[interpreter] The pre-created [Interpreter] to use.
+     */
+    @VisibleForTesting
+    constructor(interpreter: Interpreter) {
+        mInterpreter = interpreter
     }
 
     /**
@@ -67,41 +120,6 @@ class GestureDetectorHelper(
         val outputBuffer = FloatBuffer.allocate(6)
 
         mInterpreter.run(inputBuffer, outputBuffer)
-        return getLabel(inputBuffer)
-    }
-
-    /**
-     * Loads a model with given [mModelName] to a
-     * [MappedByteBuffer].
-     *
-     * @param[ctx] A [Context] used to access assets folder.
-     * @return A [MappedByteBuffer] with model data.
-     */
-    private fun loadModel(ctx: Context): MappedByteBuffer {
-        val fd = ctx.assets.openFd(mModelName)
-        val stream = FileInputStream(fd.fileDescriptor)
-        val channel = stream.channel
-        val startOffset = fd.startOffset
-        val declareLength = fd.declaredLength
-        return channel.map(FileChannel.MapMode.READ_ONLY, startOffset, declareLength)
-    }
-
-    /**
-     * Returns the label form an output array.
-     *
-     * @param[out] The output arras as a [FloatBuffer].
-     * @return The predicted [Label].
-     */
-    private fun getLabel(out: FloatBuffer): Label {
-        var maxValue = out[0]
-        var maxIdx = 0
-        for (i in 1 until out.capacity()) {
-            if (out[i] > maxValue) {
-                maxValue = out[i]
-                maxIdx = i
-            }
-        }
-        // FIXME: Return the correct label based on the predicted value
-        return Label.OTHER
+        return getLabel(outputBuffer)
     }
 }
