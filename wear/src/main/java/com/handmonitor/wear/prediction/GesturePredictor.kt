@@ -2,6 +2,7 @@ package com.handmonitor.wear.prediction
 
 import android.content.Context
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import com.handmonitor.wear.sensors.SensorsConsumer
 
 /**
@@ -13,13 +14,29 @@ import com.handmonitor.wear.sensors.SensorsConsumer
  *
  * @constructor Creates an instance of [GesturePredictor] with given [Context].
  */
-class GesturePredictor(ctx: Context) : SensorsConsumer {
+class GesturePredictor : SensorsConsumer {
     companion object {
         private const val TAG = "GesturePredictor"
     }
 
-    private val mDetectorHelper: GestureDetectorHelper =
-        GestureDetectorHelper(ctx, "model.tflite")
+    private val mDetectorHelper: GestureDetectorHelper
+
+    /**
+     * Constructs an instance of [GesturePredictor] with given
+     * [Context].
+     */
+    constructor(ctx: Context) {
+        mDetectorHelper = GestureDetectorHelper(ctx, "model.tflite")
+    }
+
+    /**
+     * Constructs an instance of [GesturePredictor] with
+     * pre-existing [GestureDetectorHelper].
+     */
+    @VisibleForTesting
+    constructor(detectorHelper: GestureDetectorHelper) {
+        mDetectorHelper = detectorHelper
+    }
 
     override fun onNewData(data: FloatArray) {
         val predictedLabel = mDetectorHelper.predict(data)
