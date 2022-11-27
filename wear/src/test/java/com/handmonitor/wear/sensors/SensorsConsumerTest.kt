@@ -1,10 +1,10 @@
 package com.handmonitor.wear.sensors
 
 import android.util.Log
+import com.google.common.truth.Truth.assertThat
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -27,7 +27,7 @@ class SensorsConsumerTest {
 
         val impl = object : SensorsConsumer {
             override fun onNewData(data: FloatArray) {
-                assertEquals(mockData, data)
+                assertThat(data).isEqualTo(mockData)
                 throw InterruptedException()
             }
         }

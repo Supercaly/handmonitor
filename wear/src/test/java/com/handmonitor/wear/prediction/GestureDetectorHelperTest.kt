@@ -1,10 +1,10 @@
 package com.handmonitor.wear.prediction
 
+import com.google.common.truth.Truth.assertThat
 import com.handmonitor.wear.data.Label
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.tensorflow.lite.Interpreter
@@ -29,6 +29,6 @@ class GestureDetectorHelperTest {
         verifyOrder {
             mInterpreter.run(any(), any())
         }
-        assertEquals(Label.WASHING, predictedLabel)
+        assertThat(predictedLabel).isEqualTo(Label.WASHING)
     }
 }

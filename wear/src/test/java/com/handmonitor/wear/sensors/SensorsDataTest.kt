@@ -1,11 +1,10 @@
 package com.handmonitor.wear.sensors
 
+import com.google.common.truth.Truth.assertThat
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import org.junit.jupiter.api.Assertions.assertArrayEquals
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -40,7 +39,7 @@ class SensorsDataTest {
         expected[0] = 1.0f
         expected[1] = 2.0f
         expected[2] = 3.0f
-        assertArrayEquals(expected, mAccArray)
+        assertThat(mAccArray).isEqualTo(expected)
     }
 
     @Test
@@ -50,7 +49,7 @@ class SensorsDataTest {
         expected[0] = 4.0f
         expected[1] = 5.0f
         expected[2] = 6.0f
-        assertArrayEquals(expected, mGyrArray)
+        assertThat(mGyrArray).isEqualTo(expected)
     }
 
     @Test
@@ -78,8 +77,8 @@ class SensorsDataTest {
     @Test
     fun `getData returns data`() {
         var data = mData.getData()
-        assertEquals(data.size, 128 * 6)
-        assertArrayEquals(FloatArray(128 * 6) { 0.0f }, data)
+        assertThat(data.size).isEqualTo(128 * 6)
+        assertThat(data).isEqualTo(FloatArray(128 * 6) { 0.0f })
 
         mAccArray[0] = 1.0f
         mAccArray[1] = 2.0f
@@ -88,12 +87,12 @@ class SensorsDataTest {
         mGyrArray[1] = 5.0f
         mGyrArray[2] = 6.0f
         data = mData.getData()
-        assertEquals(1.0f, data[0])
-        assertEquals(2.0f, data[1])
-        assertEquals(3.0f, data[2])
-        assertEquals(4.0f, data[3])
-        assertEquals(5.0f, data[4])
-        assertEquals(6.0f, data[5])
+        assertThat(data[0]).isEqualTo(1.0f)
+        assertThat(data[1]).isEqualTo(2.0f)
+        assertThat(data[2]).isEqualTo(3.0f)
+        assertThat(data[3]).isEqualTo(4.0f)
+        assertThat(data[4]).isEqualTo(5.0f)
+        assertThat(data[5]).isEqualTo(6.0f)
     }
 
     @Test
