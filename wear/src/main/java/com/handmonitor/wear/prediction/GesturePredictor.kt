@@ -15,6 +15,15 @@ import com.handmonitor.wear.sensors.SensorsConsumer
  * the obtained sensors data to extract hand-washing and
  * hand-rubbing events.
  *
+ * This class implements the [SensorsConsumer]'s method [onNewData] to receive
+ * new sensor data collected by the system in windows. On every call a label is
+ * predicted from this data and the set of labels creates hand events.
+ *
+ * An hand event is created when we receive a label of type WASHING or RUBBING
+ * and is considered open until those labels are received. When the label OTHER
+ * is received more than [MAX_N_DIFFERENT_LABELS] the event is considered closed
+ * and it's stored to the database using [HandEventsRepository].
+ *
  * @constructor Creates an instance of [GesturePredictor] with given [Context].
  */
 class GesturePredictor : SensorsConsumer {
@@ -25,29 +34,20 @@ class GesturePredictor : SensorsConsumer {
 
     private val mDetectorHelper: GestureDetectorHelper
 
-    // TODO: Replace this list with data saved on a database
-    private val mEvents: MutableList<HandEvent> = mutableListOf()
-
     // Current open event stuff
-    private var mCurrentEventType: HandEventType? = null
-    private var mNumDiffEvents: Int = 0
-    private var mSamplesNum: Int = 0
-    private var mEventStartTime: Long = 0L
+    private var mEventOpenType: HandEventType = HandEventType.WASHING
+    private var mCurrentEventStartTime: Long = 0L
+    private var mCloseCnt: Int = 0
+    private var mOtherLabelsCnt: Int = 0
+    private var mWashingLabelsCnt: Int = 0
+    private var mRubbingLabelsCnt: Int = 0
 
     /**
-     * Current open event type.
-     * This is [HandEventType] or null.
+     * This value is set to true if there is a current hand event being
+     * collected, otherwise it's set to false.
      */
-    val openEventType: HandEventType?
-        get() = mCurrentEventType
-
-    /**
-     * Last closed event.
-     * This is an instance of [HandEvent] or null in case
-     * no event was ever closed.
-     */
-    val lastEvent: HandEvent?
-        get() = mEvents.getOrNull(0)
+    val hasOpenEvent: Boolean
+        get() = (mWashingLabelsCnt != 0) or (mRubbingLabelsCnt != 0)
 
     /**
      * Constructs an instance of [GesturePredictor] with given
@@ -71,81 +71,89 @@ class GesturePredictor : SensorsConsumer {
         val predictedLabel = mDetectorHelper.predict(data)
         Log.d(TAG, "onNewData: Predicted label '$predictedLabel'")
 
+        // The OTHER label is associated with two different counters:
+        // - mOtherLabelsCnt counts the number of OTHER labels obtained in the middle
+        //  of the hand event (for example the case where we have some WASHING, then
+        //  some OTHER and then more WASHING)
+        // - mCloseCnt counts the number of consecutive OTHER labels and it's used to
+        //  trigger the closing of the hand event
+        // mCloseCnt is incremented every time we got a OTHER label, then if we got a
+        // WASHING or RUBBING label we add the value of mCloseCnt to mOtherLabelsCnt
+        // and reset mCloseCnt to zero.
         when (predictedLabel) {
             // The label is OTHER
             Label.OTHER -> {
                 // There's an open event?
-                if (mCurrentEventType != null) {
-                    // Increment counter of different labels
-                    mNumDiffEvents++
-                    // If i got more than n different labels close the current event
-                    if (mNumDiffEvents > MAX_N_DIFFERENT_LABELS) {
+                if (hasOpenEvent) {
+                    // Increment OTHER counter
+                    mCloseCnt++
+                    // Check if we need to close the current event
+                    if (mCloseCnt >= MAX_N_DIFFERENT_LABELS) {
                         closeCurrentEvent()
                     }
                 }
             }
             // The label is WASHING
             Label.WASHING -> {
-                // Check current open event type
-                when (mCurrentEventType) {
-                    HandEventType.WASHING -> {
-                        // Append to the current wash event
-                        mSamplesNum++
-                    }
-                    HandEventType.RUBBING -> {
-                        // Increment number of different labels
-                        mNumDiffEvents++
-                        // If i got more than n different labels close the current event
-                        if (mNumDiffEvents > MAX_N_DIFFERENT_LABELS) {
-                            closeCurrentEvent()
-                        }
-                    }
-                    null -> {
-                        // Open a new wash event
-                        openNewEvent(HandEventType.WASHING)
-                    }
+                // Open a new event if there's not one
+                if (!hasOpenEvent) {
+                    openNewEvent()
+                    mEventOpenType = HandEventType.WASHING
+                }
+                // Append a new WASHING label
+                mWashingLabelsCnt++
+                // We got some OTHER in the middle of the event
+                if (mCloseCnt > 0) {
+                    mOtherLabelsCnt += mCloseCnt
+                    mCloseCnt = 0
                 }
             }
             // The label is RUBBING
             Label.RUBBING -> {
-                // Check current open event type
-                when (mCurrentEventType) {
-                    HandEventType.WASHING -> {
-                        // Increment number of different labels
-                        mNumDiffEvents++
-                        // If i got more than n different labels close the current event
-                        if (mNumDiffEvents > MAX_N_DIFFERENT_LABELS) {
-                            closeCurrentEvent()
-                        }
-                    }
-                    HandEventType.RUBBING -> {
-                        // Append to the current rub event
-                        mSamplesNum++
-                    }
-                    null -> {
-                        // Open a new rub event
-                        openNewEvent(HandEventType.RUBBING)
-                    }
+                // Open a new event if there's not one
+                if (!hasOpenEvent) {
+                    openNewEvent()
+                    mEventOpenType = HandEventType.RUBBING
+                }
+                // Append a new RUBBING label
+                mRubbingLabelsCnt++
+                // We got some OTHER in the middle of the event
+                if (mCloseCnt > 0) {
+                    mOtherLabelsCnt += mCloseCnt
+                    mCloseCnt = 0
                 }
             }
         }
     }
 
     /**
-     * Open a new event.
-     *
-     * Create a new hand event appending all new labels
-     * of the same type, until the event it's closed.
-     *
-     * @param[eventType] Type of hand event to create.
+     * Open a new hand event.
      * @see [closeCurrentEvent]
      */
-    private fun openNewEvent(eventType: HandEventType) {
-        mNumDiffEvents = 0
-        mEventStartTime = System.currentTimeMillis()
-        mSamplesNum = 1
-        mCurrentEventType = eventType
+    private fun openNewEvent() {
+        mCurrentEventStartTime = System.currentTimeMillis()
+        mCloseCnt = 0
+        mOtherLabelsCnt = 0
+        mWashingLabelsCnt = 0
+        mRubbingLabelsCnt = 0
     }
+
+    /**
+     * Returns the [HandEventType] of the current open event
+     * based on the type of labels collected so far.
+     *
+     * This method is called when closing the currently
+     * olen event.
+     *
+     * @see [closeCurrentEvent]
+     */
+    private fun getEventType(): HandEventType =
+        if (mWashingLabelsCnt > mRubbingLabelsCnt)
+            HandEventType.WASHING
+        else if (mRubbingLabelsCnt > mWashingLabelsCnt)
+            HandEventType.RUBBING
+        else
+            mEventOpenType
 
     /**
      * Close the currently open hand event.
@@ -153,18 +161,20 @@ class GesturePredictor : SensorsConsumer {
      * @see [openNewEvent]
      */
     private fun closeCurrentEvent() {
-        // FIXME: HandEvent has int duration, but times are floats
-        // TODO: Store the new event in a local database
-        mEvents.add(
-            HandEvent(
-                openEventType!!,
-                mSamplesNum * 2,
-                mEventStartTime
-            )
+        println("$mWashingLabelsCnt $mRubbingLabelsCnt $mOtherLabelsCnt")
+        val event = HandEvent(
+            0,
+            getEventType(),
+            (mWashingLabelsCnt + mRubbingLabelsCnt + mOtherLabelsCnt),
+            mCurrentEventStartTime,
+            System.currentTimeMillis()
         )
-        mCurrentEventType = null
-        mNumDiffEvents = 0
-        mEventStartTime = 0L
-        mSamplesNum = 0
+
+        mCloseCnt = 0
+        mOtherLabelsCnt = 0
+        mWashingLabelsCnt = 0
+        mRubbingLabelsCnt = 0
+
+        Log.d(TAG, "closeCurrentEvent: New HandEvent produced $event")
     }
 }
