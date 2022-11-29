@@ -50,9 +50,9 @@ jobs:
 
       - name: Upload Unit Tests Reports for Wear app
         uses: actions/upload-artifact@v2
-          with:
-            name: wear-tests-report
-            path: wear/build/reports/tests/testDebugUnitTest
+        with:
+          name: wear-tests-report
+          path: wear/build/reports/tests/testDebugUnitTest
 
       - name: Report Wear app tests
         uses: dorny/test-reporter@v1
