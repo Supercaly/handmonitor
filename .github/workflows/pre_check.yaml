@@ -1,0 +1,33 @@
+# Run the pre checks to the repository, this includes linting and running unit tests
+
+name: Lint and Unit Test the code
+on: [ push, pull_request ]
+env:
+  JAVA_VERSION: 1.8
+
+jobs:
+  # Lint the code
+  lint:
+    name: Check and Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Check Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Check Lint
+        run: ./gradlew lintDebug
+
+      - name: Upload Wear App Lint Report
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: lint-report
+          path: wear/build/reports/lint-results-debug.html
