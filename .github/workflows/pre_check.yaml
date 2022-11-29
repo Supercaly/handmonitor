@@ -24,6 +24,9 @@ jobs:
       - name: Check Gradle Wrapper
         uses: gradle/wrapper-validation-action@v1
 
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
       - run: ./gradlew tasks
       - run: ./gradlew clean
       - name: Check Lint
