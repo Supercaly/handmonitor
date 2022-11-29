@@ -1,0 +1,63 @@
+# Run the pre checks to the repository, this includes linting and running unit tests
+
+name: Lint and Unit Test the code
+on: [ push, pull_request ]
+env:
+  JAVA_DIST: 'zulu'
+  JAVA_VERSION: 11
+
+jobs:
+  # Lint the code
+  lint:
+    name: Check and Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: ${{ env.JAVA_DIST }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Check Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Lint all the code in debug mode
+        run: ./gradlew lintDebug
+
+      - name: Upload Lint Reports for Wear app
+        uses: actions/upload-artifact@v2
+        with:
+          name: wear-lint-report
+          path: wear/build/reports/lint-results-debug.html
+
+  # Run unit tests
+  unit-test:
+    name: Unit Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: ${{ env.JAVA_DIST }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Run Unit Tests
+        run: ./gradlew test
+
+      - name: Upload Unit Tests Reports for Wear app
+        uses: actions/upload-artifact@v2
+        with:
+          name: wear-tests-report
+          path: wear/build/reports/tests/testDebugUnitTest
+
+      - name: Report Wear app tests
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Unit Tests Report
+          path: wear/build/test-results/testDebugUnitTest/TEST-*.xml
+          reporter: java-junit
