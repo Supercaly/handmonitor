@@ -3,6 +3,7 @@ buildscript {
         compose_version = '1.4.0-alpha02'
         wear_compose_version = '1.1.0-rc01'
         tflite_version = '2.10.0'
+        room_version = '2.4.3'
     }
 }// Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {

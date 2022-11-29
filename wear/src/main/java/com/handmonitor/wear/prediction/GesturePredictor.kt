@@ -6,7 +6,11 @@ import androidx.annotation.VisibleForTesting
 import com.handmonitor.wear.data.HandEvent
 import com.handmonitor.wear.data.HandEventType
 import com.handmonitor.wear.data.Label
+import com.handmonitor.wear.database.AppDatabase
+import com.handmonitor.wear.prediction.GesturePredictor.Companion.MAX_N_DIFFERENT_LABELS
+import com.handmonitor.wear.repository.HandEventsRepository
 import com.handmonitor.wear.sensors.SensorsConsumer
+import kotlinx.coroutines.runBlocking
 
 /**
  * A gesture predictor.
@@ -33,6 +37,7 @@ class GesturePredictor : SensorsConsumer {
     }
 
     private val mDetectorHelper: GestureDetectorHelper
+    private val mHandEventsRepository: HandEventsRepository
 
     // Current open event stuff
     private var mEventOpenType: HandEventType = HandEventType.WASHING
@@ -55,6 +60,7 @@ class GesturePredictor : SensorsConsumer {
      */
     constructor(ctx: Context) {
         mDetectorHelper = GestureDetectorHelper(ctx, "model.tflite")
+        mHandEventsRepository = HandEventsRepository(AppDatabase.getDatabase(ctx))
     }
 
     /**
@@ -62,8 +68,9 @@ class GesturePredictor : SensorsConsumer {
      * pre-existing [GestureDetectorHelper].
      */
     @VisibleForTesting
-    constructor(detectorHelper: GestureDetectorHelper) {
+    constructor(detectorHelper: GestureDetectorHelper, handEventsRepository: HandEventsRepository) {
         mDetectorHelper = detectorHelper
+        mHandEventsRepository = handEventsRepository
     }
 
     override fun onNewData(data: FloatArray) {
@@ -176,5 +183,12 @@ class GesturePredictor : SensorsConsumer {
         mRubbingLabelsCnt = 0
 
         Log.d(TAG, "closeCurrentEvent: New HandEvent produced $event")
+        // FIXME: Using runBlocking will stop current thread waiting for the repository
+        //  to call addNewEvent on a coroutine. This could be a valid solution since we are
+        //  not on the main thread, but remember that the current thread will not ask for new
+        //  data until this call is finished (that can take more than 2 seconds).
+        runBlocking {
+            mHandEventsRepository.addNewEvent(event)
+        }
     }
 }

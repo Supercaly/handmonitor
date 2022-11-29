@@ -2,7 +2,7 @@ package com.handmonitor.wear.prediction
 
 import android.util.Log
 import com.google.common.truth.Truth.assertThat
-import com.handmonitor.wear.HandEventsRepository
+import com.handmonitor.wear.repository.HandEventsRepository
 import com.handmonitor.wear.data.HandEvent
 import com.handmonitor.wear.data.HandEventType
 import com.handmonitor.wear.data.Label
@@ -28,7 +28,7 @@ class GesturePredictorTest {
         mockkStatic(Log::class)
         every { Log.d(any(), any()) } returns 0
         mPredictor = GesturePredictor(mDetectorHelper, mHandEventsRepository)
-        every { mHandEventsRepository.addNewEvent(capture(events)) } just Runs
+        coEvery { mHandEventsRepository.addNewEvent(capture(events)) } just Runs
     }
 
     @Test
