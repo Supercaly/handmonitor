@@ -3,7 +3,8 @@
 name: Lint and Unit Test the code
 on: [ push, pull_request ]
 env:
-  JAVA_VERSION: 1.8
+  JAVA_DIST: 'zulu'
+  JAVA_VERSION: 11
 
 jobs:
   # Lint the code
@@ -17,6 +18,7 @@ jobs:
       - name: Setup Java JDK
         uses: actions/setup-java@v3
         with:
+          distribution: ${{ env.JAVA_DIST }}
           java-version: ${{ env.JAVA_VERSION }}
 
       - name: Check Gradle Wrapper
