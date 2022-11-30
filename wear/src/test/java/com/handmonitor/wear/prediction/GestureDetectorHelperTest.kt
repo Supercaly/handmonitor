@@ -2,9 +2,12 @@ package com.handmonitor.wear.prediction
 
 import com.google.common.truth.Truth.assertThat
 import com.handmonitor.wear.data.Label
-import io.mockk.*
+import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.slot
+import io.mockk.spyk
+import io.mockk.verifyOrder
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.tensorflow.lite.Interpreter

@@ -11,7 +11,7 @@ import java.io.FileInputStream
 import java.nio.FloatBuffer
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
-import java.util.*
+import java.util.Arrays
 
 /**
  * Helper for gesture detector.
