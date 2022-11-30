@@ -26,11 +26,19 @@ jobs:
       - name: Lint all the code in debug mode
         run: ./gradlew lintDebug
 
+      - name: Lint Kotlin code
+        run: ./gradlew ktlintCheck
+
+      - name: Compress lint reports in a tar archive
+        run: >- 
+          cd wear/build/reports && 
+          tar -czf wear-lint-report.tar.gz ktlint lint-results-debug.*
+
       - name: Upload Lint Reports for Wear app
         uses: actions/upload-artifact@v2
         with:
-          name: wear-lint-report
-          path: wear/build/reports/lint-results-debug.html
+          name: wear-lint-report.tar.gz
+          path: wear/build/reports/wear-lint-report.tar.gz
 
   # Run unit tests
   unit-test:
