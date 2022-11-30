@@ -2,13 +2,18 @@ package com.handmonitor.wear.prediction
 
 import android.util.Log
 import com.google.common.truth.Truth.assertThat
-import com.handmonitor.wear.repository.HandEventsRepository
 import com.handmonitor.wear.data.HandEvent
 import com.handmonitor.wear.data.HandEventType
 import com.handmonitor.wear.data.Label
-import io.mockk.*
+import com.handmonitor.wear.repository.HandEventsRepository
+import io.mockk.Runs
+import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.just
+import io.mockk.mockkStatic
+import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith

@@ -23,8 +23,8 @@ import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import com.handmonitor.wear.R
-import com.handmonitor.wear.sensors.SensorService
 import com.handmonitor.wear.presentation.theme.HandMonitorTheme
+import com.handmonitor.wear.sensors.SensorService
 
 class MainActivity : ComponentActivity() {
 
@@ -65,7 +65,7 @@ fun ServiceBtn(intent: Intent) {
     val ctx = LocalContext.current
 
     Button(onClick = {
-        started.value= if (!started.value) {
+        started.value = if (!started.value) {
             ctx.startService(intent)
             true
         } else {
