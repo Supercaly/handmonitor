@@ -30,14 +30,17 @@ jobs:
         run: ./gradlew ktlintCheck
 
       - name: Compress lint reports in a tar archive
+        if: always()
+        id: tarLintReports
         run: >- 
           cd wear/build/reports && 
           tar -czf wear-lint-report.tar.gz ktlint lint-results-debug.*
 
       - name: Upload Lint Reports for Wear app
+        if: always() && steps.tarLintReports.outcome == 'success'
         uses: actions/upload-artifact@v2
         with:
-          name: wear-lint-report.tar.gz
+          name: wear-lint-report
           path: wear/build/reports/wear-lint-report.tar.gz
 
   # Run unit tests
