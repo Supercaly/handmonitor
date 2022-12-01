@@ -13,7 +13,6 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.just
 import io.mockk.mockkStatic
 import io.mockk.verify
-import io.mockk.verifyAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -42,63 +41,95 @@ class SensorsListenerTest {
     fun setup() {
         mockkStatic(Log::class)
         every { Log.e(any(), any()) } returns 0
-        every { Log.w(any(), any<String>()) } returns 0
-
         every { mContext.getSystemService(Context.SENSOR_SERVICE) } returns mSensorManager
+    }
+
+    @Test
+    fun `startListening starts supported sensors`() {
+        // Start listening with all sensors supported
         every { mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) } returns mAcc
         every { mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) } returns mGyr
         every { mSensorManager.registerListener(any(), any(), any(), any(), any()) } returns true
-        every { mSensorManager.unregisterListener(any<SensorEventListener>()) } just Runs
 
-        every { mAcc.type } returns Sensor.TYPE_ACCELEROMETER
-        every { mGyr.type } returns Sensor.TYPE_GYROSCOPE
-    }
-
-    @Test
-    fun `init when all sensors are supported`() {
-        SensorsListener(mContext, mSensorsData, mHandler)
-        verifyAll {
-            mContext.getSystemService(Context.SENSOR_SERVICE)
-            mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-            mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
+        var listener = SensorsListener(mContext, mSensorsData, mHandler)
+        listener.startListening()
+        verify {
+            mSensorManager.registerListener(any(), mAcc, any(), any(), any())
+            mSensorManager.registerListener(any(), mGyr, any(), any(), any())
         }
-    }
 
-    @Test
-    fun `init when some sensor is not supported`() {
+        // Start listening with only accelerometer supported
         every { mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) } returns null
-        SensorsListener(mContext, mSensorsData, mHandler)
-        verifyAll {
-            mContext.getSystemService(Context.SENSOR_SERVICE)
-            mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-            mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
+        listener = SensorsListener(mContext, mSensorsData, mHandler)
+        listener.startListening()
+        verify {
+            mSensorManager.registerListener(any(), mAcc, any(), any(), any())
+        }
+
+        // Start listening with only gyroscope supported
+        every { mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) } returns null
+        listener = SensorsListener(mContext, mSensorsData, mHandler)
+        listener.startListening()
+        verify {
+            mSensorManager.registerListener(any(), mGyr, any(), any(), any())
         }
     }
 
     @Test
-    fun `startListening starts listening to sensors`() {
-        SensorsListener(mContext, mSensorsData, mHandler).startListening()
-        verify(exactly = 2) {
-            mSensorManager.registerListener(any(), any(), any(), any(), any())
-        }
-    }
+    fun `startListening skips multiple calls without stopListening`() {
+        every { mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) } returns mAcc
+        every { mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) } returns mGyr
+        every { mSensorManager.registerListener(any(), any(), any(), any(), any()) } returns true
 
-    @Test
-    fun `startListening starts listening to supported sensors`() {
-        every { mSensorManager.getDefaultSensor(any()) } returns null
-        SensorsListener(mContext, mSensorsData, mHandler).startListening()
-        verify(inverse = true) {
-            mSensorManager.registerListener(any(), any(), any(), any(), mHandler)
+        val listener = SensorsListener(mContext, mSensorsData, mHandler)
+        listener.startListening()
+        verify {
+            mSensorManager.registerListener(any(), mAcc, any(), any(), any())
+            mSensorManager.registerListener(any(), mGyr, any(), any(), any())
+        }
+
+        listener.startListening()
+        verify(atMost = 1) {
+            mSensorManager.registerListener(any(), mAcc, any(), any(), any())
+            mSensorManager.registerListener(any(), mGyr, any(), any(), any())
         }
     }
 
     @Test
     fun `stopListening stops listening to sensors`() {
-        val l = SensorsListener(mContext, mSensorsData, mHandler)
-        every { mSensorManager.unregisterListener(any<SensorEventListener>()) } returns Unit
-        l.stopListening()
+        every { mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) } returns mAcc
+        every { mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) } returns mGyr
+        every { mSensorManager.unregisterListener(any<SensorEventListener>()) } just Runs
+
+        val listener = SensorsListener(mContext, mSensorsData, mHandler)
+        listener.stopListening()
         verify {
             mSensorManager.unregisterListener(any<SensorEventListener>())
+        }
+    }
+
+    @Test
+    fun `startListening, stopListening and then startListening again`() {
+        every { mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) } returns mAcc
+        every { mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) } returns mGyr
+        every { mSensorManager.registerListener(any(), any(), any(), any(), any()) } returns true
+        every { mSensorManager.unregisterListener(any<SensorEventListener>()) } just Runs
+
+        val listener = SensorsListener(mContext, mSensorsData, mHandler)
+
+        listener.startListening()
+        verify {
+            mSensorManager.registerListener(any(), mAcc, any(), any(), any())
+            mSensorManager.registerListener(any(), mGyr, any(), any(), any())
+        }
+        listener.stopListening()
+        verify {
+            mSensorManager.unregisterListener(any<SensorEventListener>())
+        }
+        listener.startListening()
+        verify {
+            mSensorManager.registerListener(any(), mAcc, any(), any(), any())
+            mSensorManager.registerListener(any(), mGyr, any(), any(), any())
         }
     }
 }

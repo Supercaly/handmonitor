@@ -44,6 +44,7 @@ class SensorsListener(
     private val mSensorManager: SensorManager
     private var mAccSensor: Sensor? = null
     private var mGyroSensor: Sensor? = null
+    private var mIsListening = false
 
     init {
         mSensorManager = ctx.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -61,35 +62,45 @@ class SensorsListener(
     /**
      * Start listening to sensors events.
      *
+     * This method starts listening to the accelerometer and gyroscope
+     * sensors if they are supported and we are not already listening.
+     *
      * @see [stopListening].
      */
     fun startListening() {
-        if (mAccSensor != null) {
-            mSensorManager.registerListener(
-                this,
-                mAccSensor,
-                SAMPLING_PERIOD_US,
-                MAX_LATENCY_US,
-                mHandler
-            )
-        }
-        if (mGyroSensor != null) {
-            mSensorManager.registerListener(
-                this,
-                mGyroSensor,
-                SAMPLING_PERIOD_US,
-                MAX_LATENCY_US,
-                mHandler
-            )
+        if (!mIsListening) {
+            mIsListening = true
+            if (mAccSensor != null) {
+                mSensorManager.registerListener(
+                    this,
+                    mAccSensor,
+                    SAMPLING_PERIOD_US,
+                    MAX_LATENCY_US,
+                    mHandler
+                )
+            }
+            if (mGyroSensor != null) {
+                mSensorManager.registerListener(
+                    this,
+                    mGyroSensor,
+                    SAMPLING_PERIOD_US,
+                    MAX_LATENCY_US,
+                    mHandler
+                )
+            }
         }
     }
 
     /**
      * Stop listening to sensors events.
      *
+     * This method is safe to call as many times we want,
+     * even before [startListening].
+     *
      * @see [startListening].
      */
     fun stopListening() {
+        mIsListening = false
         mSensorManager.unregisterListener(this)
     }
 
