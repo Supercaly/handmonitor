@@ -95,8 +95,8 @@ class SensorsListener(
 
     override fun onSensorChanged(event: SensorEvent?) {
         when (event?.sensor?.type) {
-            Sensor.TYPE_ACCELEROMETER -> mSensorsData.putAcc(event.values)
-            Sensor.TYPE_GYROSCOPE -> mSensorsData.putGyro(event.values)
+            Sensor.TYPE_ACCELEROMETER -> mSensorsData.putAcc(SensorSample.fromArray(event.values))
+            Sensor.TYPE_GYROSCOPE -> mSensorsData.putGyro(SensorSample.fromArray(event.values))
             else -> {
                 Log.w(TAG, "onSensorChanged: Unknown sensor type ${event?.sensor?.type}")
             }

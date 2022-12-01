@@ -1,13 +1,33 @@
 package com.handmonitor.wear.sensors
 
+import com.handmonitor.wear.sensors.SensorsData.Companion.SAMPLING_WINDOW_SIZE
+import com.handmonitor.wear.sensors.SensorsDataImpl.Companion.WINDOW_DATA_SIZE
 import java.util.concurrent.Semaphore
+import java.util.concurrent.locks.ReentrantLock
 
 /**
- * A shared sensor data access.
+ * Represents a single sample of data obtained from a sensor.
+ *
+ * This type of data is a [Triple] of [Float]s values representing
+ * the sensors' x, y, z values.
+ */
+data class SensorSample(
+    val x: Float,
+    val y: Float,
+    val z: Float
+) {
+    companion object {
+        fun fromArray(array: FloatArray): SensorSample =
+            SensorSample(array[0], array[1], array[2])
+    }
+}
+
+/**
+ * A shared access to sensors data.
  *
  * This class represents a memory object shared between two threads,
- * one that listens to real-time values from the device sensors, and
- * the other that uses the data.
+ * one produces real-time values from the device sensors, and
+ * the other that consumes them.
  *
  * This class implements a sort of producer-consumer pattern, but the
  * data is produced continuously and it's consumed in windows of [SAMPLING_WINDOW_SIZE].
@@ -16,114 +36,129 @@ class SensorsData {
     companion object {
         // TODO: Extract the sampling window size outside this class to be more customizable.
         const val SAMPLING_WINDOW_SIZE = 128
-        const val SENSORS_LIST_SIZE = SAMPLING_WINDOW_SIZE * 3
     }
 
-    // Semaphores for thread synchronization
-    private val mPutSemaphore: Semaphore = Semaphore(1)
-    private val mGetSemaphore: Semaphore = Semaphore(0)
+    // Semaphores and locks for thread synchronization
+    private val mProducerLock: ReentrantLock = ReentrantLock()
+    private val mProducerSemaphore: Semaphore = Semaphore(1)
+    private val mConsumerSemaphore: Semaphore = Semaphore(0)
 
     // Internal data arrays and indexes
-    private val mAccArray: FloatArray = FloatArray(SENSORS_LIST_SIZE) { 0.0f }
-    private val mGyrArray: FloatArray = FloatArray(SENSORS_LIST_SIZE) { 0.0f }
-    private var mAccIdx: Int = 0
-    private var mGyrIdx: Int = 0
+    private val mSensorsDataImpl: SensorsDataImpl = SensorsDataImpl()
 
     /**
-     * Adds a new [accelerometer][acc] sample to the collected data list.
+     * Adds a new accelerometer [SensorSample] to the window.
      *
-     * NOTE: This method is intended to be called only by one producer thread
-     * at a time; using multiple producers will result in unpredictable behaviour.
-     *
-     * @param[acc] An accelerometer sample is a [FloatArray] with 3 value for the
-     * three axes of the accelerometer sensor.
-     *
+     * @param[acc] A new accelerometer [SensorSample].
      * @throws InterruptedException in case the thread waiting is terminated.
      */
-    fun putAcc(acc: FloatArray) {
-        // FIXME: This function assumes it's only called by one thread at a time.
-        mAccArray[mAccIdx + 0] = acc[0]
-        mAccArray[mAccIdx + 1] = acc[1]
-        mAccArray[mAccIdx + 2] = acc[2]
-        mAccIdx += 3
-        checkArraysAreFull()
+    fun putAcc(acc: SensorSample) {
+        mProducerLock.lock()
+        val full = mSensorsDataImpl.appendAcc(acc)
+        if (full) {
+            // Notify the consumer that the data is ready
+            mConsumerSemaphore.release()
+            // Wait for the consumer to copy the data
+            mProducerSemaphore.acquire()
+        }
+        mProducerLock.unlock()
     }
 
     /**
-     * Adds a new [gyroscope][gyro] sample to the collected data list.
+     * Adds a new gyroscope [SensorSample] to the window.
      *
-     * NOTE: This method is intended to be called only by one producer thread
-     * at a time; using multiple producers will result in unpredictable behaviour.
-     *
-     * @param[gyro] A gyroscope sample is a [FloatArray] with 3 value for the
-     * three axes of the gyroscope sensor.
-     *
+     * @param[gyro] A new gyroscope [SensorSample].
      * @throws InterruptedException in case the thread waiting is terminated.
      */
-    fun putGyro(gyro: FloatArray) {
-        // FIXME: This function assumes it's only called by one thread at a time.
-        mGyrArray[mGyrIdx + 0] = gyro[0]
-        mGyrArray[mGyrIdx + 1] = gyro[1]
-        mGyrArray[mGyrIdx + 2] = gyro[2]
-        mGyrIdx += 3
-        checkArraysAreFull()
+    fun putGyro(gyro: SensorSample) {
+        mProducerLock.lock()
+        val full = mSensorsDataImpl.appendGyro(gyro)
+        if (full) {
+            // Notify the consumer that the data is ready
+            mConsumerSemaphore.release()
+            // Wait for the consumer to copy the data
+            mProducerSemaphore.acquire()
+        }
+        mProducerLock.unlock()
     }
 
     /**
-     * Return the collected sensor data in a window of [SAMPLING_WINDOW_SIZE].
+     * Wait until a window with sensors data is produced and return it.
      *
      * This method will wait until the producer has filled the processing
-     * window's list with sensors data.
+     * window with sensors data.
      *
-     * NOTE: This method is intended to be called only by one consumer thread
-     * at a time; using multiple consumers will result in unpredictable behaviour.
-     *
-     * @return the collected data in a window of [SAMPLING_WINDOW_SIZE]
-     * as a [FloatArray].
-     *
+     * @return the window as a [FloatArray] of size [SAMPLING_WINDOW_SIZE].
      * @throws InterruptedException in case the thread waiting is terminated.
      */
     fun getData(): FloatArray {
         // Wait for all data to be produced
-        mGetSemaphore.acquire()
+        mConsumerSemaphore.acquire()
         // Copy data to a thread-safe buffer
-        // FIXME: Replace this array copy with a more performant solution
-        //  Instead of managing two internal arrays and merging them every time
-        //  evaluate if it's better to have only one and simply cloning it here.
-        val buffer = FloatArray(SAMPLING_WINDOW_SIZE * 6) { 0.0f }
-        for (i in 0 until SAMPLING_WINDOW_SIZE * 3 step 3) {
-            buffer[i * 2 + 0] = mAccArray[i + 0]
-            buffer[i * 2 + 1] = mAccArray[i + 1]
-            buffer[i * 2 + 2] = mAccArray[i + 2]
-            buffer[i * 2 + 3] = mGyrArray[i + 0]
-            buffer[i * 2 + 4] = mGyrArray[i + 1]
-            buffer[i * 2 + 5] = mGyrArray[i + 2]
-        }
+        val buffer = mSensorsDataImpl.window.clone()
         // Notify producer that we are done copying
-        mPutSemaphore.release()
+        mProducerSemaphore.release()
         return buffer
+    }
+}
+
+/**
+ * Internal implementation of sensors data.
+ *
+ * This class implements methods to append accelerometer and gyroscope
+ * [SensorSample]s filling a window of size [WINDOW_DATA_SIZE].
+ */
+internal class SensorsDataImpl {
+    companion object {
+        const val WINDOW_DATA_SIZE = SAMPLING_WINDOW_SIZE * 6
+    }
+
+    private val mWindowData: FloatArray = FloatArray(WINDOW_DATA_SIZE) { 0.0f }
+    private var mAccIdx: Int = 0
+    private var mGyroIdx: Int = 0
+
+    /**
+     * The window of data created by accelerometer and gyroscope samples
+     * represented as a 1D [FloatArray].
+     */
+    val window: FloatArray
+        get() = mWindowData
+
+    /**
+     * Appends a new accelerometer [SensorSample].
+     * @param[acc] The new accelerometer [SensorSample].
+     * @return true if the underlying window is full, false otherwise.
+     */
+    fun appendAcc(acc: SensorSample): Boolean {
+        mWindowData[mAccIdx + 0] = acc.x
+        mWindowData[mAccIdx + 1] = acc.y
+        mWindowData[mAccIdx + 2] = acc.z
+        mAccIdx += 6
+
+        if (mAccIdx >= WINDOW_DATA_SIZE || mGyroIdx >= WINDOW_DATA_SIZE) {
+            mAccIdx = 0
+            mGyroIdx = 0
+            return true
+        }
+        return false
     }
 
     /**
-     * Check if the internal arrays are full and notify the consumer.
-     *
-     * This method is called by [putAcc] and [putGyro] every time a new
-     * data sample is added; if one of the internal sensor arrays is full
-     * reset the indexes to zero, release one permission of the consumer
-     * semaphore and wait for it to copy the data.
-     *
-     * @throws InterruptedException in case the thread waiting is terminated.
+     * Appends a new gyroscope [SensorSample].
+     * @param[gyro] The new gyroscope [SensorSample].
+     * @return true if the underlying window is full, false otherwise.
      */
-    private fun checkArraysAreFull() {
-        if (mAccIdx >= SENSORS_LIST_SIZE ||
-            mGyrIdx >= SENSORS_LIST_SIZE
-        ) {
+    fun appendGyro(gyro: SensorSample): Boolean {
+        mWindowData[mGyroIdx + 3] = gyro.x
+        mWindowData[mGyroIdx + 4] = gyro.y
+        mWindowData[mGyroIdx + 5] = gyro.z
+        mGyroIdx += 6
+
+        if (mAccIdx >= WINDOW_DATA_SIZE || mGyroIdx >= WINDOW_DATA_SIZE) {
             mAccIdx = 0
-            mGyrIdx = 0
-            // Notify the consumer that the data is ready
-            mGetSemaphore.release()
-            // Wait for the consumer to copy the data
-            mPutSemaphore.acquire()
+            mGyroIdx = 0
+            return true
         }
+        return false
     }
 }

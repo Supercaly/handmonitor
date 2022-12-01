@@ -11,7 +11,6 @@ import java.io.FileInputStream
 import java.nio.FloatBuffer
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
-import java.util.Arrays
 
 /**
  * Helper for gesture detector.
@@ -90,10 +89,10 @@ class GestureDetectorHelper {
 
         Log.d(TAG, "init: loaded model '$modelName'")
         Log.d(TAG, "init: input")
-        Log.d(TAG, "init: \tshape: ${Arrays.toString(mInterpreter.getInputTensor(0).shape())}")
+        Log.d(TAG, "init: \tshape: ${mInterpreter.getInputTensor(0).shape().contentToString()}")
         Log.d(TAG, "init: \ttype: ${mInterpreter.getInputTensor(0).dataType()}")
         Log.d(TAG, "init: output")
-        Log.d(TAG, "init: \tshape: ${Arrays.toString(mInterpreter.getOutputTensor(0).shape())}")
+        Log.d(TAG, "init: \tshape: ${mInterpreter.getOutputTensor(0).shape().contentToString()}")
         Log.d(TAG, "init: \ttype: ${mInterpreter.getOutputTensor(0).dataType()}")
     }
 
