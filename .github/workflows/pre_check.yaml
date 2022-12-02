@@ -64,7 +64,13 @@ jobs:
       - name: Run Unit Tests
         run: ./gradlew test
 
+      - name: Compress tests reports in tar archives
+        if: always()
+        id: tarTestsReports
+        run: ./scripts/compress_lint_reports.sh
+
       - name: Upload Unit Tests Reports for wear app
+        if: always() && steps.tarTestsReports.outcome == 'success'
         uses: actions/upload-artifact@v2
         with:
           name: wear-tests-report
@@ -79,6 +85,7 @@ jobs:
           reporter: java-junit
 
       - name: Upload Unit Tests Reports for sensorslib app
+        if: always() && steps.tarTestsReports.outcome == 'success'
         uses: actions/upload-artifact@v2
         with:
           name: sensorslib-tests-report
