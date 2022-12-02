@@ -19,6 +19,11 @@ import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(MockKExtension::class)
 class SensorsListenerTest {
+    companion object {
+        private const val WINDOW_DUR_MS = 2_000
+        private const val SAMPLING_P_MS = 20
+    }
+
     @MockK
     private lateinit var mContext: Context
 
@@ -51,7 +56,8 @@ class SensorsListenerTest {
         every { mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) } returns mGyr
         every { mSensorManager.registerListener(any(), any(), any(), any(), any()) } returns true
 
-        var listener = SensorsListener(mContext, mSensorsData, mHandler)
+        var listener =
+            SensorsListener(mContext, mSensorsData, mHandler, WINDOW_DUR_MS, SAMPLING_P_MS)
         listener.startListening()
         verify {
             mSensorManager.registerListener(any(), mAcc, any(), any(), any())
@@ -60,7 +66,7 @@ class SensorsListenerTest {
 
         // Start listening with only accelerometer supported
         every { mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) } returns null
-        listener = SensorsListener(mContext, mSensorsData, mHandler)
+        listener = SensorsListener(mContext, mSensorsData, mHandler, WINDOW_DUR_MS, SAMPLING_P_MS)
         listener.startListening()
         verify {
             mSensorManager.registerListener(any(), mAcc, any(), any(), any())
@@ -68,7 +74,7 @@ class SensorsListenerTest {
 
         // Start listening with only gyroscope supported
         every { mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) } returns null
-        listener = SensorsListener(mContext, mSensorsData, mHandler)
+        listener = SensorsListener(mContext, mSensorsData, mHandler, WINDOW_DUR_MS, SAMPLING_P_MS)
         listener.startListening()
         verify {
             mSensorManager.registerListener(any(), mGyr, any(), any(), any())
@@ -81,7 +87,8 @@ class SensorsListenerTest {
         every { mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) } returns mGyr
         every { mSensorManager.registerListener(any(), any(), any(), any(), any()) } returns true
 
-        val listener = SensorsListener(mContext, mSensorsData, mHandler)
+        val listener =
+            SensorsListener(mContext, mSensorsData, mHandler, WINDOW_DUR_MS, SAMPLING_P_MS)
         listener.startListening()
         verify {
             mSensorManager.registerListener(any(), mAcc, any(), any(), any())
@@ -101,7 +108,8 @@ class SensorsListenerTest {
         every { mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) } returns mGyr
         every { mSensorManager.unregisterListener(any<SensorEventListener>()) } just Runs
 
-        val listener = SensorsListener(mContext, mSensorsData, mHandler)
+        val listener =
+            SensorsListener(mContext, mSensorsData, mHandler, WINDOW_DUR_MS, SAMPLING_P_MS)
         listener.stopListening()
         verify {
             mSensorManager.unregisterListener(any<SensorEventListener>())
@@ -115,7 +123,8 @@ class SensorsListenerTest {
         every { mSensorManager.registerListener(any(), any(), any(), any(), any()) } returns true
         every { mSensorManager.unregisterListener(any<SensorEventListener>()) } just Runs
 
-        val listener = SensorsListener(mContext, mSensorsData, mHandler)
+        val listener =
+            SensorsListener(mContext, mSensorsData, mHandler, WINDOW_DUR_MS, SAMPLING_P_MS)
 
         listener.startListening()
         verify {

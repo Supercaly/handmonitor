@@ -55,8 +55,13 @@ class SensorsConsumerRn(
     private val mConsumer: SensorsConsumer
 ) : Runnable {
     companion object {
-        private const val TAG = "SensorsConsumerRunnable"
+        /**
+         * Name of the thread that should be used to manage [SensorsConsumerRn].
+         *
+         * @see [SensorsConsumerRn]
+         */
         const val threadName = "SensorsConsumerThread"
+        private const val TAG = "SensorsConsumerRunnable"
     }
 
     override fun run() {

@@ -18,10 +18,13 @@ import com.handmonitor.wear.prediction.GesturePredictor
 class SensorService : Service() {
     companion object {
         private const val TAG = "SensorService"
+        private const val SAMPLING_WINDOW_SIZE = 128
+        private const val SAMPLING_PERIOD_MS = 20
+        private const val SAMPLING_WINDOW_DURATION_MS = 2_500
     }
 
     // Sensors collection stuff
-    private lateinit var mSensorsData: SensorsData
+    private val mSensorsData: SensorsData = SensorsData(SAMPLING_WINDOW_SIZE)
     private lateinit var mSensorsConsumer: SensorsConsumerRn
     private lateinit var mSensorsListener: SensorsListener
 
@@ -38,12 +41,13 @@ class SensorService : Service() {
 
     override fun onCreate() {
         Log.d(TAG, "onCreate: Service created!")
-        mSensorsData = SensorsData()
         mCollectorThread = HandlerThread(SensorsListener.threadName).apply { start() }
         mSensorsListener = SensorsListener(
             this,
             mSensorsData,
-            Handler(mCollectorThread.looper)
+            Handler(mCollectorThread.looper),
+            SAMPLING_WINDOW_DURATION_MS,
+            SAMPLING_PERIOD_MS
         )
         mGesturePredictor = GesturePredictor(this)
         mSensorsConsumer = SensorsConsumerRn(mSensorsData, mGesturePredictor)

@@ -16,29 +16,51 @@ import android.util.Log
  * sensors in the Android device like accelerometer and gyroscope
  * in his own dedicated thread and pass them to a shared [SensorsData].
  *
- * The user must start and stop the separate thread by his own and then
+ * The user must start and stop the separate thread by himself and then
  * create a [Handler] that will offload all the work. The internal Android
  * [SensorEventListener] will post a new message for each senor event so it's
  * suggested to use a [HandlerThread] for automatically manage those works.
  *
+ * Example usage:
+ * ```
+ * // Create the HandlerThread and start it
+ * val thread = HandlerThread(SensorsListener.threadName).apply {
+ *      start()
+ *      // Create the handler
+ *      val handler = Handler(thread.looper)
+ *      // Create the listener
+ *      listener = SensorsListener(context, data, handler)
+ * }
+ * ```
+ *
  * @property[mSensorsData] The values produced are passed to a shared [SensorsData].
  * @property[mHandler] The [Handler] for the separate [Thread].
+ * @param[ctx] The application's [Context].
+ * @param[windowDurationMs] The duration of the sampling window in milliseconds.
+ * @param[samplingPeriodMs] The sampling period in milliseconds; this equals 1000/freq.
  * @constructor Crates an instance of [SensorsListener] with given [Context],
- * [SensorsData] and [Handler].
+ * [SensorsData], [Handler], window duration and sampling period.
  */
 class SensorsListener(
     ctx: Context,
     private val mSensorsData: SensorsData,
-    private val mHandler: Handler
+    private val mHandler: Handler,
+    windowDurationMs: Int,
+    samplingPeriodMs: Int,
 ) : SensorEventListener {
     companion object {
+        /**
+         * Name of the thread that should be used to manage [SensorsListener].
+         *
+         * @see [SensorsListener]
+         */
         const val threadName = "SensorsListenerThread"
         private const val TAG = "SensorsListener"
-        private const val SAMPLING_PERIOD_US = 20_000
-
-        // TODO: Extract max latency outside of this class and make it depend of the sampling size.
-        private const val MAX_LATENCY_US = 2_500_000
     }
+
+    // Constants obtained from configuration converted to microseconds
+    private val mMaxLatencyUS = windowDurationMs * 1_000
+    private val mSamplingPeriodUs = samplingPeriodMs * 1_000
 
     // Sensor manager and sensors
     private val mSensorManager: SensorManager
@@ -74,8 +96,8 @@ class SensorsListener(
                 mSensorManager.registerListener(
                     this,
                     mAccSensor,
-                    SAMPLING_PERIOD_US,
-                    MAX_LATENCY_US,
+                    mSamplingPeriodUs,
+                    mMaxLatencyUS,
                     mHandler
                 )
             }
@@ -83,8 +105,8 @@ class SensorsListener(
                 mSensorManager.registerListener(
                     this,
                     mGyroSensor,
-                    SAMPLING_PERIOD_US,
-                    MAX_LATENCY_US,
+                    mSamplingPeriodUs,
+                    mMaxLatencyUS,
                     mHandler
                 )
             }

@@ -1,7 +1,5 @@
 package com.handmonitor.wear.sensors
 
-import com.handmonitor.wear.sensors.SensorsData.Companion.SAMPLING_WINDOW_SIZE
-import com.handmonitor.wear.sensors.SensorsDataImpl.Companion.WINDOW_DATA_SIZE
 import java.util.concurrent.Semaphore
 import java.util.concurrent.locks.ReentrantLock
 
@@ -30,24 +28,23 @@ data class SensorSample(
  * the other that consumes them.
  *
  * This class implements a sort of producer-consumer pattern, but the
- * data is produced continuously and it's consumed in windows of [SAMPLING_WINDOW_SIZE].
+ * data is produced continuously and it's consumed in windows given size.
+ *
+ * @param[samplingWindowSize] Size of the sampling window.
+ * @constructor Create a new instance of [SensorsData] passing a sampling
+ * window size usually equals to (sampling_freq * window_size_in_sec)
  */
-class SensorsData {
-    companion object {
-        // TODO: Extract the sampling window size outside this class to be more customizable.
-        const val SAMPLING_WINDOW_SIZE = 128
-    }
-
+class SensorsData(samplingWindowSize: Int) {
     // Semaphores and locks for thread synchronization
     private val mProducerLock: ReentrantLock = ReentrantLock()
-    private val mProducerSemaphore: Semaphore = Semaphore(1)
+    private val mProducerSemaphore: Semaphore = Semaphore(0)
     private val mConsumerSemaphore: Semaphore = Semaphore(0)
 
     // Internal data arrays and indexes
-    private val mSensorsDataImpl: SensorsDataImpl = SensorsDataImpl()
+    private val mSensorsDataImpl: SensorsDataImpl = SensorsDataImpl(samplingWindowSize)
 
     /**
-     * Adds a new accelerometer [SensorSample] to the window.
+     * Adds a new accelerometer's [SensorSample] to the window.
      *
      * @param[acc] A new accelerometer [SensorSample].
      * @throws InterruptedException in case the thread waiting is terminated.
@@ -65,7 +62,7 @@ class SensorsData {
     }
 
     /**
-     * Adds a new gyroscope [SensorSample] to the window.
+     * Adds a new gyroscope's [SensorSample] to the window.
      *
      * @param[gyro] A new gyroscope [SensorSample].
      * @throws InterruptedException in case the thread waiting is terminated.
@@ -88,7 +85,7 @@ class SensorsData {
      * This method will wait until the producer has filled the processing
      * window with sensors data.
      *
-     * @return the window as a [FloatArray] of size [SAMPLING_WINDOW_SIZE].
+     * @return the window as a [FloatArray].
      * @throws InterruptedException in case the thread waiting is terminated.
      */
     fun getData(): FloatArray {
@@ -106,14 +103,17 @@ class SensorsData {
  * Internal implementation of sensors data.
  *
  * This class implements methods to append accelerometer and gyroscope
- * [SensorSample]s filling a window of size [WINDOW_DATA_SIZE].
+ * [SensorSample]s filling a window of given size.
+ *
+ * @param[samplingWindowSize] Size of the sampling window; this parameter is used
+ * to determine the window length.
+ * @constructor Create a new instance of [SensorsDataImpl] passing a sampling
+ * window size usually equals to (sampling_freq * window_size_in_sec)
  */
-internal class SensorsDataImpl {
-    companion object {
-        const val WINDOW_DATA_SIZE = SAMPLING_WINDOW_SIZE * 6
-    }
-
-    private val mWindowData: FloatArray = FloatArray(WINDOW_DATA_SIZE) { 0.0f }
+internal class SensorsDataImpl(samplingWindowSize: Int) {
+    // The window length equals the samplingWindowSize * 6 channels for acc/gyro
+    private val mWindowLength: Int = samplingWindowSize * 6
+    private val mWindowData: FloatArray = FloatArray(mWindowLength) { 0.0f }
     private var mAccIdx: Int = 0
     private var mGyroIdx: Int = 0
 
@@ -135,7 +135,7 @@ internal class SensorsDataImpl {
         mWindowData[mAccIdx + 2] = acc.z
         mAccIdx += 6
 
-        if (mAccIdx >= WINDOW_DATA_SIZE || mGyroIdx >= WINDOW_DATA_SIZE) {
+        if (mAccIdx >= mWindowLength || mGyroIdx >= mWindowLength) {
             mAccIdx = 0
             mGyroIdx = 0
             return true
@@ -154,7 +154,7 @@ internal class SensorsDataImpl {
         mWindowData[mGyroIdx + 5] = gyro.z
         mGyroIdx += 6
 
-        if (mAccIdx >= WINDOW_DATA_SIZE || mGyroIdx >= WINDOW_DATA_SIZE) {
+        if (mAccIdx >= mWindowLength || mGyroIdx >= mWindowLength) {
             mAccIdx = 0
             mGyroIdx = 0
             return true
