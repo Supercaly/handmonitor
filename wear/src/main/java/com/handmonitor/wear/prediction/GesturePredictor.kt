@@ -3,13 +3,13 @@ package com.handmonitor.wear.prediction
 import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
+import com.handmonitor.sensorslib.SensorsConsumer
 import com.handmonitor.wear.data.HandEvent
 import com.handmonitor.wear.data.HandEventType
 import com.handmonitor.wear.data.Label
 import com.handmonitor.wear.database.AppDatabase
 import com.handmonitor.wear.prediction.GesturePredictor.Companion.MAX_N_DIFFERENT_LABELS
 import com.handmonitor.wear.repository.HandEventsRepository
-import com.handmonitor.wear.sensors.SensorsConsumer
 import kotlinx.coroutines.runBlocking
 
 /**

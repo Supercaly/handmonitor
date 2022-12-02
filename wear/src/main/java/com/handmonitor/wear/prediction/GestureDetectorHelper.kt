@@ -80,20 +80,20 @@ class GestureDetectorHelper {
             if (compatList.isDelegateSupportedOnThisDevice) {
                 val delegateOptions = compatList.bestOptionsForThisDevice
                 this.addDelegate(GpuDelegate(delegateOptions))
-                Log.i(TAG, "init: Using GPU acceleration!")
+                Log.i(TAG, "Using GPU acceleration!")
             } else {
-                Log.i(TAG, "init: GPU acceleration not supported on this device!")
+                Log.w(TAG, "GPU acceleration not supported on this device!")
             }
         }
         mInterpreter = Interpreter(model, options)
 
-        Log.d(TAG, "init: loaded model '$modelName'")
-        Log.d(TAG, "init: input")
-        Log.d(TAG, "init: \tshape: ${mInterpreter.getInputTensor(0).shape().contentToString()}")
-        Log.d(TAG, "init: \ttype: ${mInterpreter.getInputTensor(0).dataType()}")
-        Log.d(TAG, "init: output")
-        Log.d(TAG, "init: \tshape: ${mInterpreter.getOutputTensor(0).shape().contentToString()}")
-        Log.d(TAG, "init: \ttype: ${mInterpreter.getOutputTensor(0).dataType()}")
+        Log.d(TAG, "loaded model '$modelName'")
+        Log.d(TAG, "input")
+        Log.d(TAG, "\tshape: ${mInterpreter.getInputTensor(0).shape().contentToString()}")
+        Log.d(TAG, "\ttype: ${mInterpreter.getInputTensor(0).dataType()}")
+        Log.d(TAG, "output")
+        Log.d(TAG, "\tshape: ${mInterpreter.getOutputTensor(0).shape().contentToString()}")
+        Log.d(TAG, "\ttype: ${mInterpreter.getOutputTensor(0).dataType()}")
     }
 
     /**

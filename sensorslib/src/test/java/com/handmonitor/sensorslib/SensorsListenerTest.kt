@@ -1,4 +1,4 @@
-package com.handmonitor.wear.sensors
+package com.handmonitor.sensorslib
 
 import android.content.Context
 import android.hardware.Sensor
@@ -45,7 +45,9 @@ class SensorsListenerTest {
     @BeforeEach
     fun setup() {
         mockkStatic(Log::class)
-        every { Log.e(any(), any()) } returns 0
+        every { Log.d(any(), any()) } returns 0
+        every { Log.i(any(), any()) } returns 0
+        every { Log.w(any(), any<String>()) } returns 0
         every { mContext.getSystemService(Context.SENSOR_SERVICE) } returns mSensorManager
     }
 

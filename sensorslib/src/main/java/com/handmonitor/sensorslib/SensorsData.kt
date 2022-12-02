@@ -1,4 +1,4 @@
-package com.handmonitor.wear.sensors
+package com.handmonitor.sensorslib
 
 import java.util.concurrent.Semaphore
 import java.util.concurrent.locks.ReentrantLock
