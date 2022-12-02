@@ -1,4 +1,4 @@
-package com.handmonitor.wear.sensors
+package com.handmonitor.wear.service
 
 import android.app.Service
 import android.content.Intent
@@ -6,6 +6,9 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.IBinder
 import android.util.Log
+import com.handmonitor.sensorslib.SensorsConsumerRn
+import com.handmonitor.sensorslib.SensorsData
+import com.handmonitor.sensorslib.SensorsListener
 import com.handmonitor.wear.prediction.GesturePredictor
 
 /**

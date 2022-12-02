@@ -35,7 +35,7 @@
         </activity>
 
         <service
-            android:name=".sensors.SensorService"
+            android:name=".service.SensorService"
             android:description="@string/service_description"
             android:exported="false" />
     </application>
