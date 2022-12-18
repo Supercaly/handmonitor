@@ -34,7 +34,7 @@ enum class HandEventType {
  */
 @Entity(tableName = "hand_events")
 data class HandEvent(
-    // TODO: Figure out all HandEvent parameters needed
+    // TODO(#7): Figure out all HandEvent parameters needed
     @PrimaryKey(autoGenerate = true) val id: Int,
     val type: HandEventType,
     @ColumnInfo(name = "n_samples") val nSamples: Int,
