@@ -19,7 +19,7 @@ interface HandEventDao {
     @Insert
     suspend fun insertEvent(event: HandEvent)
 
-    // TODO: Add methods to query the last event and all the events after a particular date.
+    // TODO(#6): Add methods to query the last event and all the events after a particular date.
 
 //    @Query("SELECT * FROM hand_events")
 //    suspend fun getAllEvents(): List<HandEvent>
