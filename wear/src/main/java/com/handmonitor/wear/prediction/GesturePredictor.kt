@@ -183,7 +183,7 @@ class GesturePredictor : SensorsConsumer {
         mRubbingLabelsCnt = 0
 
         Log.d(TAG, "closeCurrentEvent: New HandEvent produced $event")
-        // FIXME: Using runBlocking will stop current thread waiting for the repository
+        // FIXME(#5): Using runBlocking will stop current thread waiting for the repository
         //  to call addNewEvent on a coroutine. This could be a valid solution since we are
         //  not on the main thread, but remember that the current thread will not ask for new
         //  data until this call is finished (that can take more than 2 seconds).
