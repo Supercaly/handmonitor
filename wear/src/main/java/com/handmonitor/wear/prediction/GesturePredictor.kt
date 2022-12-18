@@ -38,6 +38,7 @@ class GesturePredictor : SensorsConsumer {
 
     private val mDetectorHelper: GestureDetectorHelper
     private val mHandEventsRepository: HandEventsRepository
+    private var mLastDataTime: Long = System.currentTimeMillis()
 
     // Current open event stuff
     private var mEventOpenType: HandEventType = HandEventType.WASHING
@@ -76,7 +77,9 @@ class GesturePredictor : SensorsConsumer {
     override fun onNewData(data: FloatArray) {
         // Predict the label using ML
         val predictedLabel = mDetectorHelper.predict(data)
-        Log.d(TAG, "onNewData: Predicted label '$predictedLabel'")
+        val time = System.currentTimeMillis() - mLastDataTime
+        mLastDataTime = System.currentTimeMillis()
+        Log.d(TAG, "onNewData: Predicted label '$predictedLabel' in '${time}ms'")
 
         // The OTHER label is associated with two different counters:
         // - mOtherLabelsCnt counts the number of OTHER labels obtained in the middle
