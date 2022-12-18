@@ -34,11 +34,10 @@ enum class HandEventType {
  */
 @Entity(tableName = "hand_events")
 data class HandEvent(
+    // TODO: Figure out all HandEvent parameters needed
     @PrimaryKey(autoGenerate = true) val id: Int,
     val type: HandEventType,
     @ColumnInfo(name = "n_samples") val nSamples: Int,
-    // TODO: Add a parameter that represents the number of seconds for each sample
-    //  this is equal to the window size.
     @ColumnInfo(name = "start_time") val startTime: Long,
     @ColumnInfo(name = "end_time") val endTime: Long
 
