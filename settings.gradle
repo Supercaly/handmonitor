@@ -17,3 +17,4 @@ rootProject.name = "HandMonitor"
 include ':wear'
 include ':sensorlib'
 include ':application'
+include ':recorder'
