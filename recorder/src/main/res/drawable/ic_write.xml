@@ -1,0 +1,24 @@
+<vector android:height="200dp" android:viewportHeight="135.47"
+    android:viewportWidth="135.47" android:width="200dp" xmlns:android="http://schemas.android.com/apk/res/android">
+    <path android:fillColor="#000000"
+        android:pathData="M100.83,99.68L100.83,60.44l-4.68,0L73.72,48.97 57.78,76.59l5.12,0c0,0 2.64,0.64 2.64,3.32 0,2.68 -3.01,2.77 -3.01,2.77L36.85,82.69c0,0 -6.25,1.2 -6.25,7.26 0,6.06 6.06,6.77 6.06,6.77l26.85,0c0,0 16.62,11.57 37.32,2.96z"
+        android:strokeLineJoin="bevel" android:strokeWidth="10.09"/>
+    <path android:fillColor="#000000"
+        android:pathData="m38.56,109.82 l3.99,-6.91L61.54,102.92l3.31,1.48c0,0 -0.28,7.61 -6.7,7.61 -6.41,0 -7.54,-6.7 -7.54,-6.7 0,0 -1.2,6.77 -6.34,6.77 -5.15,0 -5.71,-2.26 -5.71,-2.26z"
+        android:strokeLineJoin="bevel" android:strokeWidth="10.09"/>
+    <path android:fillColor="#000000"
+        android:pathData="m25.81,95.58 l-3.31,5.72 -3,13.21c0,0 -0.34,1.25 0.99,2.02 1.33,0.77 2.18,0.33 2.18,0.33l10.38,-9.6 2.64,-4.57c0,0 -3.38,-0.42 -5.97,-2.48 -2.59,-2.06 -3.91,-4.64 -3.91,-4.64z"
+        android:strokeLineJoin="bevel" android:strokeWidth="10.09"/>
+    <path android:fillColor="#000000"
+        android:pathData="M49.33,42.75 L24.58,85.61c-0.54,0.94 -3.4,3.41 -5.95,0.86 -2.55,-2.55 -2.55,-4.4 -2.55,-4.4 0,0 0.09,-3.11 1.66,-6 4,-7.36 7.15,-15.34 12.59,-21.8 3.86,-4.58 9.11,-7.91 14.05,-11.15 2.07,-0.74 3.29,-0.65 4.95,-0.36z"
+        android:strokeLineJoin="bevel" android:strokeWidth="10.09"/>
+    <path android:fillColor="#000000"
+        android:pathData="m74.47,35.23 l-10.34,-5.97 4.39,-7.38c0,0 2.34,-4.89 5.71,-2.95 3.36,1.94 4.34,2.57 4.34,2.57 0,0 2.75,2.04 1.01,5.06 -1.75,3.02 -5.1,8.67 -5.1,8.67z"
+        android:strokeLineJoin="bevel" android:strokeWidth="10.09"/>
+    <path android:fillColor="#000000"
+        android:pathData="M71.44,40.57 L61.12,34.61 36.87,76.61l13.7,0z"
+        android:strokeLineJoin="bevel" android:strokeWidth="10.09"/>
+    <path android:fillColor="#000000"
+        android:pathData="M110.02,54.42L116.31,54.42A3.08,3.08 0,0 1,119.39 57.5L119.39,101.89A3.08,3.08 0,0 1,116.31 104.97L110.02,104.97A3.08,3.08 0,0 1,106.94 101.89L106.94,57.5A3.08,3.08 0,0 1,110.02 54.42z"
+        android:strokeLineJoin="bevel" android:strokeWidth="10.09"/>
+</vector>

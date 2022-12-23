@@ -1,8 +1,12 @@
 <resources>
     <string name="app_name">Recorder</string>
-    <!--
-    This string is used for square devices and overridden by hello_world in
-    values-round/strings.xml for round devices.
-    -->
-    <string name="hello_world">From the Square world,\nHello, %1$s!</string>
+
+    <string name="action_hand_wash">hand wash</string>
+    <string name="action_hand_rub">hand rub</string>
+    <string name="action_eat">eat</string>
+    <string name="action_teeth_brush">brush teeth</string>
+    <string name="action_face_wash">face wash</string>
+    <string name="action_write">write</string>
+    <string name="action_type">type</string>
+    <string name="action_housework">housework</string>
 </resources>
