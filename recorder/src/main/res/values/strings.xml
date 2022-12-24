@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Recorder</string>
+    <string name="recorder_service_description">Service that records actions from device sensors</string>
 
     <string name="action_hand_wash">hand wash</string>
     <string name="action_hand_rub">hand rub</string>
