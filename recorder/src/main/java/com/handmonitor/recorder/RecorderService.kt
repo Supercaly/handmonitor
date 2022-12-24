@@ -9,7 +9,7 @@ class RecorderService : Service() {
     companion object {
         private const val TAG = "RecorderService"
     }
-    
+
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
