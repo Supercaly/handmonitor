@@ -7,7 +7,7 @@ import android.os.HandlerThread
 import android.os.IBinder
 import android.util.Log
 import com.handmonitor.sensorslib.SensorsConsumerRn
-import com.handmonitor.sensorslib.SensorsData
+import com.handmonitor.sensorslib.SensorSharedData
 import com.handmonitor.sensorslib.SensorsListener
 import com.handmonitor.wear.prediction.GesturePredictor
 
@@ -26,8 +26,8 @@ class SensorService : Service() {
         private const val SAMPLING_WINDOW_DURATION_MS = 2_500
     }
 
-    // Sensors collection stuff
-    private val mSensorsData: SensorsData = SensorsData(SAMPLING_WINDOW_SIZE)
+    // SensorReaderHelper collection stuff
+    private val mSensorsData: SensorSharedData = SensorSharedData(SAMPLING_WINDOW_SIZE)
     private lateinit var mSensorsConsumer: SensorsConsumerRn
     private lateinit var mSensorsListener: SensorsListener
 
