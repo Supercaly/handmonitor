@@ -6,9 +6,9 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.IBinder
 import android.util.Log
-import com.handmonitor.sensorslib.SensorsConsumerRn
-import com.handmonitor.sensorslib.SensorSharedData
+import com.handmonitor.sensorslib.SensorEventConsumerRn
 import com.handmonitor.sensorslib.SensorEventProducer
+import com.handmonitor.sensorslib.SensorSharedData
 import com.handmonitor.wear.prediction.GesturePredictor
 
 /**
@@ -27,7 +27,7 @@ class SensorService : Service() {
 
     // SensorReaderHelper collection stuff
     private val mSensorsData: SensorSharedData = SensorSharedData(SAMPLING_WINDOW_SIZE)
-    private lateinit var mSensorsConsumer: SensorsConsumerRn
+    private lateinit var mSensorsConsumer: SensorEventConsumerRn
     private lateinit var mSensorEventProducer: SensorEventProducer
 
     // External Threads
@@ -52,8 +52,8 @@ class SensorService : Service() {
             SAMPLING_PERIOD_MS
         )
         mGesturePredictor = GesturePredictor(this)
-        mSensorsConsumer = SensorsConsumerRn(mSensorsData, mGesturePredictor)
-        mConsumerThread = Thread(mSensorsConsumer, SensorsConsumerRn.threadName)
+        mSensorsConsumer = SensorEventConsumerRn(mSensorsData, mGesturePredictor)
+        mConsumerThread = Thread(mSensorsConsumer, "SensorEventConsumerThread")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
