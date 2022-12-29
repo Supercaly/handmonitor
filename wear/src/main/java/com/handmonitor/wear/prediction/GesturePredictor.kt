@@ -3,7 +3,7 @@ package com.handmonitor.wear.prediction
 import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
-import com.handmonitor.sensorslib.SensorsConsumer
+import com.handmonitor.sensorslib.SensorDataHandler
 import com.handmonitor.wear.data.HandEvent
 import com.handmonitor.wear.data.HandEventType
 import com.handmonitor.wear.data.Label
@@ -15,11 +15,11 @@ import kotlinx.coroutines.runBlocking
 /**
  * A gesture predictor.
  *
- * This class implements the [SensorsConsumer] interface using
+ * This class implements the [SensorDataHandler] interface using
  * the obtained sensors data to extract hand-washing and
  * hand-rubbing events.
  *
- * This class implements the [SensorsConsumer]'s method [onNewData] to receive
+ * This class implements the [SensorDataHandler]'s method [onNewData] to receive
  * new sensor data collected by the system in windows. On every call a label is
  * predicted from this data and the set of labels creates hand events.
  *
@@ -30,7 +30,7 @@ import kotlinx.coroutines.runBlocking
  *
  * @constructor Creates an instance of [GesturePredictor] with given [Context].
  */
-class GesturePredictor : SensorsConsumer {
+class GesturePredictor : SensorDataHandler {
     companion object {
         const val MAX_N_DIFFERENT_LABELS = 3
         private const val TAG = "GesturePredictor"
