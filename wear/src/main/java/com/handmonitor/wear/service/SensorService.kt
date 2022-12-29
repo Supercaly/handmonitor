@@ -2,13 +2,9 @@ package com.handmonitor.wear.service
 
 import android.app.Service
 import android.content.Intent
-import android.os.Handler
-import android.os.HandlerThread
 import android.os.IBinder
 import android.util.Log
-import com.handmonitor.sensorslib.SensorEventConsumerRn
-import com.handmonitor.sensorslib.SensorEventProducer
-import com.handmonitor.sensorslib.SensorSharedData
+import com.handmonitor.sensorslib.SensorReaderHelper
 import com.handmonitor.wear.prediction.GesturePredictor
 
 /**
@@ -25,17 +21,13 @@ class SensorService : Service() {
         private const val SAMPLING_PERIOD_MS = 20
     }
 
-    // SensorReaderHelper collection stuff
-    private val mSensorsData: SensorSharedData = SensorSharedData(SAMPLING_WINDOW_SIZE)
-    private lateinit var mSensorsConsumer: SensorEventConsumerRn
-    private lateinit var mSensorEventProducer: SensorEventProducer
-
-    // External Threads
-    private lateinit var mCollectorThread: HandlerThread
-    private lateinit var mConsumerThread: Thread
-
-    // Inference stuff
-    private lateinit var mGesturePredictor: GesturePredictor
+    private val mGesturePredictor: GesturePredictor = GesturePredictor(this)
+    private val mSensorReaderHelper: SensorReaderHelper = SensorReaderHelper(
+        this,
+        mGesturePredictor,
+        SAMPLING_WINDOW_SIZE,
+        SAMPLING_PERIOD_MS
+    )
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -43,30 +35,16 @@ class SensorService : Service() {
 
     override fun onCreate() {
         Log.d(TAG, "onCreate: Service created!")
-        mCollectorThread = HandlerThread("SensorEventProducerThread").apply { start() }
-        mSensorEventProducer = SensorEventProducer(
-            this,
-            mSensorsData,
-            Handler(mCollectorThread.looper),
-            SAMPLING_WINDOW_SIZE,
-            SAMPLING_PERIOD_MS
-        )
-        mGesturePredictor = GesturePredictor(this)
-        mSensorsConsumer = SensorEventConsumerRn(mSensorsData, mGesturePredictor)
-        mConsumerThread = Thread(mSensorsConsumer, "SensorEventConsumerThread")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand: Service started!")
-        mSensorEventProducer.startListening()
-        mConsumerThread.start()
+        mSensorReaderHelper.start()
         return START_STICKY
     }
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy: Service stopped!")
-        mSensorEventProducer.stopListening()
-        mConsumerThread.interrupt()
-        mCollectorThread.quit()
+        mSensorReaderHelper.stop()
     }
 }
