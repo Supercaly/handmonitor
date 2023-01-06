@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -15,16 +15,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.wear.compose.material.Button
+import androidx.wear.compose.material.ButtonDefaults
 import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
+import androidx.wear.compose.material.dialog.Alert
+import androidx.wear.compose.material.dialog.Dialog
 import com.handmonitor.recorder.R
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun RecordingScreen(
-    onStopRecording: () -> Unit
+    elapsedTimeString: StateFlow<String>,
+    onStopRecording: () -> Unit,
+    onConfirm: () -> Unit,
+    onDiscard: () -> Unit
 ) {
+    var showDialog by rememberSaveable { mutableStateOf(false) }
+    val timeString by elapsedTimeString.collectAsState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -32,37 +41,59 @@ fun RecordingScreen(
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        var timeElapsedSec by rememberSaveable { mutableStateOf(0) }
-        LaunchedEffect(Unit) {
-            while (true) {
-                delay(1_000)
-                timeElapsedSec++
-            }
-        }
-
         Text(
             text = "recording",
             color = Color(0XFF979797),
             style = MaterialTheme.typography.title3
         )
         Text(
-            text = formatTime(timeElapsedSec),
+            text = timeString,
             color = MaterialTheme.colors.secondary,
             style = MaterialTheme.typography.display2
         )
-        Button(onClick = onStopRecording) {
+        Button(onClick = {
+            onStopRecording()
+            showDialog = true
+        }) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_pause),
-                contentDescription = "pause button"
+                contentDescription = "pause"
             )
         }
     }
-}
-
-fun formatTime(seconds: Int): String {
-    val hours = seconds / 3600
-    val min = (seconds - (hours * 3600)) / 60
-    val sec = seconds - (hours * 3600) - (min * 60)
-
-    return "%02d:%02d".format(min, sec)
+    Dialog(showDialog = showDialog,
+        onDismissRequest = { showDialog = false }) {
+        Alert(
+            title = { Text(text = "Save action") },
+            negativeButton = {
+                Button(
+                    onClick = {
+                        showDialog = false
+                        onDiscard()
+                    },
+                    colors = ButtonDefaults.secondaryButtonColors()
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_cancel),
+                        contentDescription = "cancel"
+                    )
+                }
+            },
+            positiveButton = {
+                Button(
+                    onClick = {
+                        showDialog = false
+                        onConfirm()
+                    },
+                    colors = ButtonDefaults.primaryButtonColors()
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_check),
+                        contentDescription = "save"
+                    )
+                }
+            }) {
+            Text(text = "You want to save the recorded action permanently?")
+        }
+    }
 }
