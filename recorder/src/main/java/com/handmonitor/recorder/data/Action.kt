@@ -12,5 +12,5 @@ class Action {
         Housework
     }
 
-    class TimeRange(val remaining: Int, val total: Int)
+    class TimeRange(val remaining: Float, val total: Float)
 }
