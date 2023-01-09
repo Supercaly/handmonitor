@@ -77,7 +77,20 @@ class RecorderViewModel(
         )
 
     val actionsTime: StateFlow<Map<Action.Type, Action.TimeRange>> =
-        recorderRepository.actionsTime
+        recorderRepository.actionsTime.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(),
+            mapOf(
+                Action.Type.HandWash to Action.TimeRange(0L),
+                Action.Type.HandRub to Action.TimeRange(0L),
+                Action.Type.Eat to Action.TimeRange(0L),
+                Action.Type.TeethBrush to Action.TimeRange(0L),
+                Action.Type.FaceWash to Action.TimeRange(0L),
+                Action.Type.Write to Action.TimeRange(0L),
+                Action.Type.Type to Action.TimeRange(0L),
+                Action.Type.Housework to Action.TimeRange(0L)
+            )
+        )
 
     fun startRecording(action: Action.Type) {
         mShowRecordingScreen.value = true
