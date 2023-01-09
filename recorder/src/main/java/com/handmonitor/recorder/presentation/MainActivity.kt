@@ -7,12 +7,14 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.handmonitor.recorder.RecorderRepository
 import com.handmonitor.recorder.RecorderService
 import com.handmonitor.recorder.RecorderViewModel
+import com.handmonitor.recorder.database.AppDatabase
 import com.handmonitor.recorder.presentation.theme.HandMonitorTheme
 
 class MainActivity : ComponentActivity() {
@@ -28,7 +30,13 @@ class MainActivity : ComponentActivity() {
             },
         )
     }
-    private val mRecorderRepository: RecorderRepository by lazy { RecorderRepository() }
+    private val mRecorderRepository: RecorderRepository by lazy {
+        RecorderRepository(
+            AppDatabase.getDatabase(
+                this
+            )
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,7 +90,7 @@ fun DefaultPreview() {
     RecorderApp(
         viewModel(
             factory = RecorderViewModel.RecorderViewModelFactory(
-                RecorderRepository()
+                RecorderRepository(AppDatabase.getDatabase(LocalContext.current))
             ) {}
         )
     )

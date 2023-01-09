@@ -1,11 +1,14 @@
 package com.handmonitor.recorder
 
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import com.handmonitor.recorder.data.Action
+import com.handmonitor.recorder.data.Recording
+import com.handmonitor.recorder.database.AppDatabase
 import com.handmonitor.sensorslib.SensorDataHandler
 import com.handmonitor.sensorslib.SensorReaderHelper
 import kotlinx.coroutines.CoroutineScope
