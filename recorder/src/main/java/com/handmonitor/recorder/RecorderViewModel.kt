@@ -56,7 +56,6 @@ class RecorderViewModel(
         override fun onServiceDisconnected(name: ComponentName?) {
             Log.d(TAG, "onServiceDisconnected: ")
             mRecorderBinder = null
-            //mShowRecordingScreen.value = false
         }
     }
 

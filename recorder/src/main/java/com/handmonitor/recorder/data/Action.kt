@@ -12,5 +12,5 @@ class Action {
         Housework
     }
 
-    class TimeRange(val remaining: Float, val total: Float)
+    class TimeRange(val remaining: Long, val total: Long = 600_000L)
 }
