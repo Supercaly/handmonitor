@@ -10,6 +10,7 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/recorder" />
             <option value="$PROJECT_DIR$/sensorslib" />
             <option value="$PROJECT_DIR$/wear" />
           </set>
