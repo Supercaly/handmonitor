@@ -6,11 +6,18 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.mapLatest
 
+/**
+ * This class is a repository that has the purpose
+ * to help retrieve the stored information about
+ * each recorded action.
+ */
 class RecorderRepository(database: AppDatabase) {
-    companion object {
-        private const val TAG = "RecorderRepository"
-    }
-
+    /**
+     * [Map] object mapping each action to it's [Action.TimeRange].
+     *
+     * This parameter is a [Flow] of maps that are automatically
+     * updated every time the underlying data changes.
+     */
     val actionsTime: Flow<Map<Action.Type, Action.TimeRange>> =
         combine(
             database.recordingDao().getRecordingsForAction(Action.Type.HandWash.name)
