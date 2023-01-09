@@ -16,14 +16,24 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
 import java.io.OutputStreamWriter
 import java.util.UUID
 
+/**
+ * Extension function that formats a [Float]
+ * to 4 digits after the comma.
+ */
 fun Float.format() = String.format("%.4f", this)
 
+/**
+ * Implements a [Service] that records an action performed
+ * by the user and stores it in the device for future use.
+ */
 class RecorderService : Service() {
     companion object {
         private const val TAG = "RecorderService"
@@ -31,9 +41,31 @@ class RecorderService : Service() {
         private const val SAMPLING_PERIOD_MS = 20
     }
 
+    /**
+     * Implements a [Binder] that helps the main application
+     * connect to the [RecorderService].
+     */
     inner class RecorderBinder : Binder() {
-        val service
-            get() = this@RecorderService
+        /**
+         * Returns the time in milliseconds elapsed since the start
+         * of the current recording.
+         */
+        val recordingTime: StateFlow<Long> = mRecordingTime.asStateFlow()
+
+        /**
+         * Stop the recording of the current action.
+         */
+        fun stopRecording() = this@RecorderService.stopRecording()
+
+        /**
+         * Save the current recorded action to a local database.
+         */
+        fun saveRecordedData() = this@RecorderService.saveRecordedData()
+
+        /**
+         * Discard the current recorded action.
+         */
+        fun discardRecordedData() = this@RecorderService.discardRecordedData()
     }
 
     private val mBinder: RecorderBinder = RecorderBinder()
@@ -42,22 +74,16 @@ class RecorderService : Service() {
             Log.d(TAG, "onNewData: ")
             for (i in data.indices step 6) {
                 mFileStream?.write(
-                    "\"${mCurrentRecordedAction?.ordinal}\"," +
-                        "${data[i + 0].format()}," +
-                        "${data[i + 1].format()}," +
-                        "${data[i + 2].format()}," +
-                        "${data[i + 3].format()}," +
-                        "${data[i + 4].format()}," +
+                    "\"${mCurrentRecordedAction?.ordinal}\"," + "${data[i + 0].format()}," +
+                        "${data[i + 1].format()}," + "${data[i + 2].format()}," +
+                        "${data[i + 3].format()}," + "${data[i + 4].format()}," +
                         "${data[i + 5].format()}\n"
                 )
             }
         }
     }
     private val mSensorReaderHelper: SensorReaderHelper = SensorReaderHelper(
-        this,
-        mActionStore,
-        SAMPLING_WINDOW_SIZE,
-        SAMPLING_PERIOD_MS
+        this, mActionStore, SAMPLING_WINDOW_SIZE, SAMPLING_PERIOD_MS
     )
 
     private var mCurrentRecordedAction: Action.Type? = null
@@ -66,14 +92,8 @@ class RecorderService : Service() {
     private var mFileName: String = ""
     private var mFileStream: OutputStreamWriter? = null
 
-    private lateinit var mTickerJob: Job
+    private lateinit var mTickerCoroutineJob: Job
     private val mRecordingTime = MutableStateFlow(0L)
-    val recordingTime = mRecordingTime.asStateFlow()
-
-    override fun onBind(intent: Intent?): IBinder {
-        Log.d(TAG, "onBind: $intent")
-        return mBinder
-    }
 
     override fun onCreate() {
         Log.d(TAG, "onCreate: ")
@@ -89,12 +109,19 @@ class RecorderService : Service() {
         mRecordingStartTimeMs = System.currentTimeMillis()
         mCurrentRecordingDuration = 0L
 
-        mTickerJob = CoroutineScope(Dispatchers.IO).launch {
-            while (true) {
-                mRecordingTime.value += 1_000L
-                delay(1_000L)
+        mTickerCoroutineJob = CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.IO) {
+                while (true) {
+                    mRecordingTime.value += 1_000L
+                    delay(1_000L)
+                }
             }
         }
+    }
+
+    override fun onBind(intent: Intent?): IBinder {
+        Log.d(TAG, "onBind: $intent")
+        return mBinder
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -107,35 +134,33 @@ class RecorderService : Service() {
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy: ")
-        mTickerJob.cancel()
+        mTickerCoroutineJob.cancel()
     }
 
-    fun stopRecording() {
-        Log.d(TAG, "stopRecording: ")
+    private fun stopRecording() {
+        Log.d(TAG, "stopRecording: Stop recording $mCurrentRecordedAction action")
         mCurrentRecordingDuration = System.currentTimeMillis() - mRecordingStartTimeMs
         mSensorReaderHelper.stop()
         mFileStream?.close()
     }
 
-    fun saveRecordedData() {
-        Log.d(TAG, "saveRecordedData: ")
+    private fun saveRecordedData() {
+        Log.d(TAG, "saveRecordedData: Saving $mCurrentRecordedAction action")
 
         CoroutineScope(Dispatchers.IO).launch {
-            AppDatabase.getDatabase(this@RecorderService).recordingDao()
-                .addRecording(
+            withContext(Dispatchers.IO) {
+                AppDatabase.getDatabase(this@RecorderService).recordingDao().addRecording(
                     Recording(
-                        0,
-                        mCurrentRecordedAction!!.name,
-                        mFileName,
-                        mCurrentRecordingDuration
+                        0, mCurrentRecordedAction!!.name, mFileName, mCurrentRecordingDuration
                     )
                 )
+            }
         }
         stopSelf()
     }
 
-    fun discardRecordedData() {
-        Log.d(TAG, "discardRecordedData: ")
+    private fun discardRecordedData() {
+        Log.d(TAG, "discardRecordedData: Discarding $mCurrentRecordedAction action")
         stopSelf()
     }
 }
