@@ -26,7 +26,7 @@ fun ActionButton(
         },
         secondaryLabel = {
             Text(
-                text = "${actionTimeRange.remaining}/${actionTimeRange.total} min",
+                text = "${formatTime(actionTimeRange.remaining)}/${formatTime(actionTimeRange.total)} min",
                 color = if (actionTimeRange.remaining < actionTimeRange.total)
                     MaterialTheme.colors.onSurface else MaterialTheme.colors.error
             )
@@ -43,6 +43,13 @@ fun ActionButton(
             backgroundColor = MaterialTheme.colors.secondary.copy(alpha = 0.2f)
         )
     )
+}
+
+private fun formatTime(timeMs: Long): String {
+    val min = (timeMs / 1_000) / 60
+    val sec = (timeMs / 1_000) % 60
+    return "%d".format(min) +
+        if (sec > 0) ".%1d".format(sec) else ""
 }
 
 private fun getTitleFromAction(action: Action.Type) =

@@ -61,8 +61,10 @@ fun RecordingScreen(
             )
         }
     }
-    Dialog(showDialog = showDialog,
-        onDismissRequest = { showDialog = false }) {
+    Dialog(
+        showDialog = showDialog,
+        onDismissRequest = { showDialog = false }
+    ) {
         Alert(
             title = { Text(text = "Save action") },
             negativeButton = {
@@ -92,7 +94,8 @@ fun RecordingScreen(
                         contentDescription = "save"
                     )
                 }
-            }) {
+            }
+        ) {
             Text(text = "You want to save the recorded action permanently?")
         }
     }
