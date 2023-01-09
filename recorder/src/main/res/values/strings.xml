@@ -10,4 +10,9 @@
     <string name="action_write">write</string>
     <string name="action_type">type</string>
     <string name="action_housework">housework</string>
+
+    <string name="action_list_title">Record Action</string>
+    <string name="recording_screen_title">recording</string>
+    <string name="recording_dialog_title">Save recording?</string>
+    <string name="recording_dialog_msg">Do you want to save the recorded action permanently?</string>
 </resources>
