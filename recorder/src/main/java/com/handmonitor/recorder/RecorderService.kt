@@ -18,6 +18,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.FileNotFoundException
+import java.io.OutputStreamWriter
+import java.util.UUID
+
+fun Float.format() = String.format("%.4f", this)
 
 class RecorderService : Service() {
     companion object {
@@ -35,6 +40,17 @@ class RecorderService : Service() {
     private val mActionStore = object : SensorDataHandler {
         override fun onNewData(data: FloatArray) {
             Log.d(TAG, "onNewData: ")
+            for (i in data.indices step 6) {
+                mFileStream?.write(
+                    "\"${mCurrentRecordedAction?.ordinal}\"," +
+                        "${data[i + 0].format()}," +
+                        "${data[i + 1].format()}," +
+                        "${data[i + 2].format()}," +
+                        "${data[i + 3].format()}," +
+                        "${data[i + 4].format()}," +
+                        "${data[i + 5].format()}\n"
+                )
+            }
         }
     }
     private val mSensorReaderHelper: SensorReaderHelper = SensorReaderHelper(
@@ -45,6 +61,10 @@ class RecorderService : Service() {
     )
 
     private var mCurrentRecordedAction: Action.Type? = null
+    private var mRecordingStartTimeMs: Long = 0L
+    private var mCurrentRecordingDuration: Long = 0L
+    private var mFileName: String = ""
+    private var mFileStream: OutputStreamWriter? = null
 
     private lateinit var mTickerJob: Job
     private val mRecordingTime = MutableStateFlow(0L)
@@ -57,7 +77,17 @@ class RecorderService : Service() {
 
     override fun onCreate() {
         Log.d(TAG, "onCreate: ")
+
+        mFileName = "${UUID.randomUUID()}.txt"
+        try {
+            mFileStream = OutputStreamWriter(this.openFileOutput(mFileName, Context.MODE_PRIVATE))
+        } catch (ex: FileNotFoundException) {
+            ex.printStackTrace()
+        }
+
         mSensorReaderHelper.start()
+        mRecordingStartTimeMs = System.currentTimeMillis()
+        mCurrentRecordingDuration = 0L
 
         mTickerJob = CoroutineScope(Dispatchers.IO).launch {
             while (true) {
@@ -82,11 +112,25 @@ class RecorderService : Service() {
 
     fun stopRecording() {
         Log.d(TAG, "stopRecording: ")
+        mCurrentRecordingDuration = System.currentTimeMillis() - mRecordingStartTimeMs
         mSensorReaderHelper.stop()
+        mFileStream?.close()
     }
 
     fun saveRecordedData() {
         Log.d(TAG, "saveRecordedData: ")
+
+        CoroutineScope(Dispatchers.IO).launch {
+            AppDatabase.getDatabase(this@RecorderService).recordingDao()
+                .addRecording(
+                    Recording(
+                        0,
+                        mCurrentRecordedAction!!.name,
+                        mFileName,
+                        mCurrentRecordingDuration
+                    )
+                )
+        }
         stopSelf()
     }
 
