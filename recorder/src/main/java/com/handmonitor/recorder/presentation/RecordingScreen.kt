@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.ButtonDefaults
 import androidx.wear.compose.material.Icon
@@ -42,7 +43,7 @@ fun RecordingScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "recording",
+            text = stringResource(id = R.string.recording_screen_title),
             color = Color(0XFF979797),
             style = MaterialTheme.typography.title3
         )
@@ -66,7 +67,7 @@ fun RecordingScreen(
         onDismissRequest = { showDialog = false }
     ) {
         Alert(
-            title = { Text(text = "Save action") },
+            title = { Text(text = stringResource(id = R.string.recording_dialog_title)) },
             negativeButton = {
                 Button(
                     onClick = {
@@ -96,7 +97,7 @@ fun RecordingScreen(
                 }
             }
         ) {
-            Text(text = "You want to save the recorded action permanently?")
+            Text(text = stringResource(id = R.string.recording_dialog_msg))
         }
     }
 }
