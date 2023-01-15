@@ -1,14 +1,13 @@
 package com.handmonitor.recorder
 
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.handmonitor.recorder.data.Action
-import com.handmonitor.recorder.data.Recording
-import com.handmonitor.recorder.database.AppDatabase
 import com.handmonitor.sensorslib.SensorDataHandler
 import com.handmonitor.sensorslib.SensorReaderHelper
 import kotlinx.coroutines.CoroutineScope
@@ -19,10 +18,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
-import java.io.OutputStreamWriter
-import java.util.UUID
+import java.time.Duration
 
 /**
  * Extension function that formats a [Float]
@@ -68,29 +67,18 @@ class RecorderService : Service() {
         fun discardRecordedData() = this@RecorderService.discardRecordedData()
     }
 
-    private val mBinder: RecorderBinder = RecorderBinder()
+    private lateinit var mBinder: RecorderBinder
     private val mActionStore = object : SensorDataHandler {
         override fun onNewData(data: FloatArray) {
             Log.d(TAG, "onNewData: ")
-            for (i in data.indices step 6) {
-                mFileStream?.write(
-                    "\"${mCurrentRecordedAction?.ordinal}\"," + "${data[i + 0].format()}," +
-                        "${data[i + 1].format()}," + "${data[i + 2].format()}," +
-                        "${data[i + 3].format()}," + "${data[i + 4].format()}," +
-                        "${data[i + 5].format()}\n"
-                )
-            }
+            mRecorderStorer?.recordData(data)
         }
     }
     private val mSensorReaderHelper: SensorReaderHelper = SensorReaderHelper(
         this, mActionStore, SAMPLING_WINDOW_SIZE, SAMPLING_PERIOD_MS
     )
-
-    private var mCurrentRecordedAction: Action.Type? = null
-    private var mRecordingStartTimeMs: Long = 0L
-    private var mCurrentRecordingDuration: Long = 0L
-    private var mFileName: String = ""
-    private var mFileStream: OutputStreamWriter? = null
+    private var mRecorderStorer: RecorderStorer? = null
+    private lateinit var mRecorderPreferences: RecorderPreferences
 
     private lateinit var mTickerCoroutineJob: Job
     private val mRecordingTime = MutableStateFlow(0L)
@@ -98,17 +86,9 @@ class RecorderService : Service() {
     override fun onCreate() {
         Log.d(TAG, "onCreate: ")
 
-        mFileName = "${UUID.randomUUID()}.txt"
-        try {
-            mFileStream = OutputStreamWriter(this.openFileOutput(mFileName, Context.MODE_PRIVATE))
-        } catch (ex: FileNotFoundException) {
-            ex.printStackTrace()
-        }
+        mRecorderPreferences = RecorderPreferences(this)
 
-        mSensorReaderHelper.start()
-        mRecordingStartTimeMs = System.currentTimeMillis()
-        mCurrentRecordingDuration = 0L
-
+        mBinder = RecorderBinder()
         mTickerCoroutineJob = CoroutineScope(Dispatchers.IO).launch {
             withContext(Dispatchers.IO) {
                 while (true) {
@@ -125,11 +105,24 @@ class RecorderService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        intent!!.getStringExtra("action-type")?.also {
-            mCurrentRecordedAction = Action.Type.valueOf(it)
+        if (!mSensorReaderHelper.isStarted) {
+            val action = intent!!.getStringExtra("action-type")?.run {
+                Action.Type.valueOf(this)
+            }
+            try {
+                mRecorderStorer = RecorderStorer(this@RecorderService, action!!)
+            } catch (ex: FileNotFoundException) {
+                ex.printStackTrace()
+                stopSelf()
+                return START_NOT_STICKY
+            }
+            mSensorReaderHelper.start()
+
+            mRecorderPreferences.isSomeoneRecording = true
         }
-        Log.d(TAG, "onStartCommand: $mCurrentRecordedAction")
-        return START_STICKY
+
+        Log.d(TAG, "onStartCommand: recording ${mRecorderStorer?.action} action")
+        return START_NOT_STICKY
     }
 
     override fun onDestroy() {
@@ -138,29 +131,30 @@ class RecorderService : Service() {
     }
 
     private fun stopRecording() {
-        Log.d(TAG, "stopRecording: Stop recording $mCurrentRecordedAction action")
-        mCurrentRecordingDuration = System.currentTimeMillis() - mRecordingStartTimeMs
+        Log.d(TAG, "stopRecording: Stop recording ${mRecorderStorer?.action} action")
         mSensorReaderHelper.stop()
-        mFileStream?.close()
+        mRecorderStorer?.stopRecording()
+
+        mRecorderPreferences.isSomeoneRecording = false
     }
 
     private fun saveRecordedData() {
-        Log.d(TAG, "saveRecordedData: Saving $mCurrentRecordedAction action")
-
-        CoroutineScope(Dispatchers.IO).launch {
-            withContext(Dispatchers.IO) {
-                AppDatabase.getDatabase(this@RecorderService).recordingDao().addRecording(
-                    Recording(
-                        0, mCurrentRecordedAction!!.name, mFileName, mCurrentRecordingDuration
-                    )
-                )
-            }
+        Log.d(TAG, "saveRecordedData: Saving ${mRecorderStorer?.action} action")
+        runBlocking {
+            mRecorderStorer?.saveRecording()
         }
+
+        WorkManager.getInstance(this).enqueue(
+            OneTimeWorkRequestBuilder<OtherActionRecorderWorker>()
+                .setInitialDelay(Duration.ofMinutes(30))
+                .build()
+        )
+
         stopSelf()
     }
 
     private fun discardRecordedData() {
-        Log.d(TAG, "discardRecordedData: Discarding $mCurrentRecordedAction action")
+        Log.d(TAG, "discardRecordedData: Discarding ${mRecorderStorer?.action} action")
         stopSelf()
     }
 }

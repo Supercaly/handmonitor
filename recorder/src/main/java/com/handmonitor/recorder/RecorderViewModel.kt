@@ -10,9 +10,12 @@ import androidx.lifecycle.viewModelScope
 import com.handmonitor.recorder.data.Action
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -33,6 +36,7 @@ import kotlinx.coroutines.withContext
  */
 class RecorderViewModel(
     recorderRepository: RecorderRepository,
+    private val recorderPreferences: RecorderPreferences,
     private val onStartService: (Action.Type) -> Unit
 ) : ViewModel() {
     companion object {
@@ -49,18 +53,20 @@ class RecorderViewModel(
      */
     class RecorderViewModelFactory(
         private val repository: RecorderRepository,
+        private val recorderPreferences: RecorderPreferences,
         private val onStartService: (Action.Type) -> Unit
     ) :
         ViewModelProvider.NewInstanceFactory() {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            RecorderViewModel(repository, onStartService) as T
+            RecorderViewModel(repository, recorderPreferences, onStartService) as T
     }
 
     private var mCounterCoroutineJob: Job? = null
     private var mRecorderBinder: RecorderService.RecorderBinder? = null
     private val mShowRecordingScreen = MutableStateFlow(mRecorderBinder != null)
     private val mRecordingTime = MutableStateFlow(1000L)
+    private val mShowConflictToast = MutableSharedFlow<Unit>(0)
 
     /**
      * Implement a [ServiceConnection] used to bind to a [RecorderService].
@@ -75,7 +81,7 @@ class RecorderViewModel(
             }
             mCounterCoroutineJob = viewModelScope.launch {
                 withContext(Dispatchers.IO) {
-                    mRecorderBinder!!.recordingTime.collect {
+                    mRecorderBinder?.recordingTime?.collect {
                         mRecordingTime.value = it
                     }
                 }
@@ -85,6 +91,7 @@ class RecorderViewModel(
         override fun onServiceDisconnected(name: ComponentName?) {
             Log.d(TAG, "onServiceDisconnected: ")
             mRecorderBinder = null
+            mShowRecordingScreen.value = false
         }
     }
 
@@ -130,13 +137,24 @@ class RecorderViewModel(
         )
 
     /**
+     * Shared flow used to mark if we need to display
+     * a recording conflict toast.
+     */
+    val showConflictToast: SharedFlow<Unit> =
+        mShowConflictToast.asSharedFlow()
+
+    /**
      * Start the recording process of an action.
      *
      * @param[action] [Action.Type] to record.
      */
     fun startRecording(action: Action.Type) {
-        mShowRecordingScreen.value = true
-        onStartService(action)
+        if (recorderPreferences.isSomeoneRecording) {
+            Log.w(TAG, "startRecording: Someone else is recording at the moment!")
+            viewModelScope.launch { mShowConflictToast.emit(Unit) }
+        } else {
+            onStartService(action)
+        }
     }
 
     /**
