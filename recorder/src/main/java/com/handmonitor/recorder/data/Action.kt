@@ -9,6 +9,7 @@ class Action {
      * by the app.
      */
     enum class Type {
+        Other,
         HandWash,
         HandRub,
         Eat,

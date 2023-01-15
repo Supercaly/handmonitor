@@ -27,12 +27,12 @@ fun ActionsList(
                 style = MaterialTheme.typography.title2
             )
         }
-        for (t in Action.Type.values()) {
+        for (element in actionsTime.iterator()) {
             item {
                 ActionButton(
-                    actionType = t,
-                    actionTimeRange = actionsTime[t]!!,
-                    onClick = { onActionSelected(t) }
+                    actionType = element.key,
+                    actionTimeRange = element.value,
+                    onClick = { onActionSelected(element.key) }
                 )
             }
         }
