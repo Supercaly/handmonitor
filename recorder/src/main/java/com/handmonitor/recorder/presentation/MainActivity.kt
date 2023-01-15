@@ -2,6 +2,7 @@ package com.handmonitor.recorder.presentation
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
@@ -64,8 +65,15 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun RecorderApp(recorderViewModel: RecorderViewModel) {
+    val context = LocalContext.current
     val showRecordingScreen by recorderViewModel.showRecordingScreen.collectAsState()
     val actionsTime by recorderViewModel.actionsTime.collectAsState()
+
+    LaunchedEffect(Unit) {
+        recorderViewModel.showConflictToast.collect {
+            Toast.makeText(context, "Cannot record now", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     HandMonitorTheme {
         if (showRecordingScreen) {
