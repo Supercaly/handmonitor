@@ -48,8 +48,7 @@ fun ActionButton(
 private fun formatTime(timeMs: Long): String {
     val min = (timeMs / 1_000) / 60
     val sec = (timeMs / 1_000) % 60
-    return "%d".format(min) +
-            if (sec > 0) ".%1d".format(sec) else ""
+    return "%d".format(min) + if (sec > 0) ".%1d".format(sec) else ""
 }
 
 private fun getTitleFromAction(action: Action.Type) =

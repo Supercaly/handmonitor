@@ -29,9 +29,9 @@ class RecorderStorer @Throws(FileNotFoundException::class) constructor(
         for (i in data.indices step 6) {
             mFileStream.write(
                 "\"${action.ordinal}\"," + "${data[i + 0].format()}," +
-                        "${data[i + 1].format()}," + "${data[i + 2].format()}," +
-                        "${data[i + 3].format()}," + "${data[i + 4].format()}," +
-                        "${data[i + 5].format()}\n"
+                    "${data[i + 1].format()}," + "${data[i + 2].format()}," +
+                    "${data[i + 3].format()}," + "${data[i + 4].format()}," +
+                    "${data[i + 5].format()}\n"
             )
         }
     }
