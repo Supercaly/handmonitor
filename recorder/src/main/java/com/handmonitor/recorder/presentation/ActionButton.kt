@@ -62,6 +62,7 @@ private fun getTitleFromAction(action: Action.Type) =
         Action.Type.Write -> R.string.action_write
         Action.Type.Type -> R.string.action_type
         Action.Type.Housework -> R.string.action_housework
+        else -> R.string.action_other
     }
 
 private fun getIconFromAction(action: Action.Type) =
@@ -74,4 +75,5 @@ private fun getIconFromAction(action: Action.Type) =
         Action.Type.Write -> R.drawable.ic_write
         Action.Type.Type -> R.drawable.ic_keyboard
         Action.Type.Housework -> R.drawable.ic_housework
+        else -> R.drawable.ic_cancel
     }
