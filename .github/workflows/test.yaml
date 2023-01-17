@@ -1,0 +1,35 @@
+# Github Action that runs tests on the project
+
+name: Test
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - '**'
+
+env:
+  JAVA_DIST: 'zulu'
+  JAVA_VERSION: 11
+
+jobs:
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: ${{ env.JAVA_DIST }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Check Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Run Unit Tests
+        run: ./gradlew test

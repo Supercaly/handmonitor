@@ -1,0 +1,38 @@
+# Github Action that lints and checks formatting on the project
+
+name: Check Linting
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - '**'
+
+env:
+  JAVA_DIST: 'zulu'
+  JAVA_VERSION: 11
+
+jobs:
+  lint:
+    name: Check Lint and Formatting
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: ${{ env.JAVA_DIST }}
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Check Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Run Android Lint
+        run: ./gradlew lint
+
+      - name: Run ktLint
+        run: ./gradlew ktlintCheck
