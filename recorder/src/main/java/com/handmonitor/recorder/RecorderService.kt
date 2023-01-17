@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
+import androidx.work.BackoffPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.handmonitor.recorder.data.Action
@@ -147,6 +148,10 @@ class RecorderService : Service() {
         WorkManager.getInstance(this).enqueue(
             OneTimeWorkRequestBuilder<OtherActionRecorderWorker>()
                 .setInitialDelay(Duration.ofMinutes(30))
+                .setBackoffCriteria(
+                    BackoffPolicy.EXPONENTIAL,
+                    Duration.ofMinutes(5)
+                )
                 .build()
         )
 
