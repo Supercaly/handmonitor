@@ -2,6 +2,7 @@ package com.handmonitor.recorder
 
 import android.content.Context
 import android.util.Log
+import androidx.work.ListenableWorker.Result.Retry
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.handmonitor.recorder.data.Action
@@ -43,14 +44,16 @@ class OtherActionRecorderWorker(
 
         if (mRecorderPreferences.isSomeoneRecording) {
             Log.w(TAG, "doWork: someone else is recording already")
-            // TODO: Do a retry instead of a fail
-            return Result.failure()
+            return if (runAttemptCount < 2)
+                Result.retry()
+            else
+                Retry.failure()
         }
 
         mRecorderPreferences.isSomeoneRecording = true
         mSensorReaderHelper.start()
 
-        Thread.sleep(180_000)
+        Thread.sleep(60_000)
 
         mSensorReaderHelper.stop()
         mRecorderStorer.stopRecording()
