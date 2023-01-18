@@ -15,4 +15,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "HandMonitor"
 include ':wear'
+include ':application'
 include ':sensorslib'
