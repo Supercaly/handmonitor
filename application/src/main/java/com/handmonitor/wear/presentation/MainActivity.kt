@@ -1,4 +1,4 @@
-package com.handmonitor.wear
+package com.handmonitor.wear.presentation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
