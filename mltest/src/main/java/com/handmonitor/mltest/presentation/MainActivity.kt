@@ -47,6 +47,7 @@ fun WearApp() {
             val context = LocalContext.current
             Button(
                 onClick = {
+                    context.startService(Intent(context, TestService::class.java))
                 },
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             ) {
