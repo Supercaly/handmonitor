@@ -17,11 +17,17 @@ class TestDataHandler(
 ) : SensorDataHandler {
     companion object {
         private const val TAG = "TestDataHandler"
-        private const val MODEL_NAME = "conv1d_step0_100_512_16.tflite"
+
+//        private const val MODEL_NAME = "conv1d_step0_100_512_16.tflite"
 //        private const val MODEL_NAME = "lstm_step0_100_128_16.tflite"
 //        private const val MODEL_NAME = "conv1d_lstm_step0_100_256_16.tflite"
 //        private const val MODEL_NAME = "conv1d_BI_lstm_step0_100_1024_16.tflite"
-        private const val OUTPUT_SIZE = 3
+//        private const val MODEL_NAME = "conv1d_step1_100_128_128.tflite"
+//        private const val MODEL_NAME = "lstm_step1_100_512_32.tflite"
+//        private const val MODEL_NAME = "conv1d_lstm_step1_100_32_1024.tflite"
+        private const val MODEL_NAME = "conv1d_BI_lstm_step1_100_32_1024.tflite"
+
+        private const val OUTPUT_SIZE = 2
         private const val MAX_REPETITION = 100
     }
 
@@ -80,7 +86,7 @@ class TestDataHandler(
             val mean = mTimes.fold(0L) { a, v -> a + v } / MAX_REPETITION.toFloat()
             val std =
                 sqrt(mTimes.fold(0.0) { a, v -> a + v * v - mean * mean } / MAX_REPETITION - 1)
-            Log.d(TAG, "onNewData: mean: $mean, std: $std")
+            Log.i(TAG, "onNewData: mean: ${mean / 1e6}ms std: ${std / 1e6}ms")
             onFinish()
         }
         mCurrentRepetition++
