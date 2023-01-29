@@ -17,18 +17,31 @@ class TestDataHandler(
 ) : SensorDataHandler {
     companion object {
         private const val TAG = "TestDataHandler"
-
-//        private const val MODEL_NAME = "conv1d_step0_100_512_16.tflite"
-//        private const val MODEL_NAME = "lstm_step0_100_128_16.tflite"
-//        private const val MODEL_NAME = "conv1d_lstm_step0_100_256_16.tflite"
-//        private const val MODEL_NAME = "conv1d_BI_lstm_step0_100_1024_16.tflite"
-//        private const val MODEL_NAME = "conv1d_step1_100_128_128.tflite"
-//        private const val MODEL_NAME = "lstm_step1_100_512_32.tflite"
-//        private const val MODEL_NAME = "conv1d_lstm_step1_100_32_1024.tflite"
-        private const val MODEL_NAME = "conv1d_BI_lstm_step1_100_32_1024.tflite"
+        private const val MODEL_NAME = "conv1d_step0.1_100_8_8.tflite"
+//        private const val MODEL_NAME = "conv1d_step0.1_100_8_16.tflite"
+//        private const val MODEL_NAME = "conv1d_step0.1_100_8_32.tflite"
+//        private const val MODEL_NAME = "conv1d_step0.1_100_8_64.tflite"
+//        private const val MODEL_NAME = "conv1d_step0.1_100_8_128.tflite"
+//        private const val MODEL_NAME = "conv1d_step0.1_100_16_8.tflite"
+//        private const val MODEL_NAME = "conv1d_step0.1_100_16_16.tflite"
+//        private const val MODEL_NAME = "conv1d_step0.1_100_16_32.tflite"
+//        private const val MODEL_NAME = "conv1d_step0.1_100_16_64.tflite"
+//        private const val MODEL_NAME = "conv1d_step0.1_100_16_128.tflite"
+//        private const val MODEL_NAME = "conv1d_step0.1_100_32_8.tflite"
+//        private const val MODEL_NAME = "conv1d_step0.1_100_32_16.tflite"
+//        private const val MODEL_NAME = "conv1d_step0.1_100_32_32.tflite"
+//        private const val MODEL_NAME = "conv1d_step0.1_100_32_64.tflite"
+//        private const val MODEL_NAME = "conv1d_step0.1_100_32_128.tflite"
+//        private const val MODEL_NAME = "conv1d_step0.1_100_64_8.tflite"
+//        private const val MODEL_NAME = "conv1d_step0.1_100_64_16.tflite"
+//        private const val MODEL_NAME = "conv1d_step0.1_100_64_32.tflite"
+//        private const val MODEL_NAME = "conv1d_step0.1_100_64_64.tflite"
+//        private const val MODEL_NAME = "conv1d_step0.1_100_64_128.tflite"
+//        private const val MODEL_NAME = "conv1d_step0.1_100_128_8.tflite"
+//        private const val MODEL_NAME = "conv1d_step0.1_100_128_16.tflite"
 
         private const val OUTPUT_SIZE = 2
-        private const val MAX_REPETITION = 100
+        private const val MAX_REPETITION = 20
     }
 
     private var mCurrentRepetition = 0
@@ -79,13 +92,13 @@ class TestDataHandler(
                     label = i
                 }
             }
-            Log.d(TAG, "onNewData: $mCurrentRepetition: Predicted label $label")
+            Log.d(TAG, "onNewData: $mCurrentRepetition: Predicted label $label: ${mTimes[mCurrentRepetition]}")
             mTimes[mCurrentRepetition] = System.nanoTime() - startTimeNs
-//            Log.d(TAG, "onNewData: ${mTimes[mCurrentRepetition]}")
         } else {
             val mean = mTimes.fold(0L) { a, v -> a + v } / MAX_REPETITION.toFloat()
             val std =
                 sqrt(mTimes.fold(0.0) { a, v -> a + v * v - mean * mean } / MAX_REPETITION - 1)
+            Log.i(TAG, "onNewData: model $MODEL_NAME")
             Log.i(TAG, "onNewData: mean: ${mean / 1e6}ms std: ${std / 1e6}ms")
             onFinish()
         }
