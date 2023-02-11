@@ -3,7 +3,7 @@ package com.handmonitor.wear.prediction
 import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
-import com.handmonitor.sensorslib.SensorDataHandler
+import com.handmonitor.sensorslib.SensorWindow
 import com.handmonitor.wear.data.HandEvent
 import com.handmonitor.wear.data.HandEventType
 import com.handmonitor.wear.data.Label
@@ -15,13 +15,8 @@ import kotlinx.coroutines.runBlocking
 /**
  * A gesture predictor.
  *
- * This class implements the [SensorDataHandler] interface using
- * the obtained sensors data to extract hand-washing and
- * hand-rubbing events.
- *
- * This class implements the [SensorDataHandler]'s method [onNewData] to receive
- * new sensor data collected by the system in windows. On every call a label is
- * predicted from this data and the set of labels creates hand events.
+ * This class receives [SensorWindow]s and predicts a label from this data
+ * creating an hand event.
  *
  * An hand event is created when we receive a label of type WASHING or RUBBING
  * and is considered open until those labels are received. When the label OTHER
@@ -30,7 +25,8 @@ import kotlinx.coroutines.runBlocking
  *
  * @constructor Creates an instance of [GesturePredictor] with given [Context].
  */
-class GesturePredictor : SensorDataHandler {
+// TODO: Rework this class to better integrate with the Flow API.
+class GesturePredictor {
     companion object {
         const val MAX_N_DIFFERENT_LABELS = 3
         private const val TAG = "GesturePredictor"
@@ -74,9 +70,9 @@ class GesturePredictor : SensorDataHandler {
         mHandEventsRepository = handEventsRepository
     }
 
-    override fun onNewData(data: FloatArray) {
+    fun onNewData(data: SensorWindow) {
         // Predict the label using ML
-        val predictedLabel = mDetectorHelper.predict(data)
+        val predictedLabel = mDetectorHelper.predict(data.buffer)
         val time = System.currentTimeMillis() - mLastDataTime
         mLastDataTime = System.currentTimeMillis()
         Log.d(TAG, "onNewData: Predicted label '$predictedLabel' in '${time}ms'")

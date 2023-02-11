@@ -26,7 +26,7 @@ class GestureDetectorHelperTest {
         }
 
         val gdh = spyk(GestureDetectorHelper(mInterpreter), recordPrivateCalls = true)
-        val fakeData = FloatArray(128 * 6) { 0.0f }
+        val fakeData = FloatBuffer.wrap(FloatArray(128 * 6) { 0.0f })
         val predictedLabel = gdh.predict(fakeData)
 
         verifyOrder {

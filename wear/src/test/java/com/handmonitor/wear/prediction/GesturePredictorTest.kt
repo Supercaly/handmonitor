@@ -2,6 +2,7 @@ package com.handmonitor.wear.prediction
 
 import android.util.Log
 import com.google.common.truth.Truth.assertThat
+import com.handmonitor.sensorslib.SensorWindow
 import com.handmonitor.wear.data.HandEvent
 import com.handmonitor.wear.data.HandEventType
 import com.handmonitor.wear.data.Label
@@ -17,6 +18,7 @@ import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import java.nio.FloatBuffer
 
 @ExtendWith(MockKExtension::class)
 class GesturePredictorTest {
@@ -26,20 +28,21 @@ class GesturePredictorTest {
     @MockK
     private lateinit var mHandEventsRepository: HandEventsRepository
     private lateinit var mPredictor: GesturePredictor
-    private val events = mutableListOf<HandEvent>()
+    private val mEvents = mutableListOf<HandEvent>()
+    private val mMockWindow = SensorWindow(FloatBuffer.allocate(0))
 
     @BeforeEach
     fun setup() {
         mockkStatic(Log::class)
         every { Log.d(any(), any()) } returns 0
         mPredictor = GesturePredictor(mDetectorHelper, mHandEventsRepository)
-        coEvery { mHandEventsRepository.addNewEvent(capture(events)) } just Runs
+        coEvery { mHandEventsRepository.addNewEvent(capture(mEvents)) } just Runs
     }
 
     @Test
     fun `onNewData predicts a label`() {
         every { mDetectorHelper.predict(any()) } returns Label.OTHER
-        mPredictor.onNewData(floatArrayOf())
+        mPredictor.onNewData(mMockWindow)
         verify {
             mDetectorHelper.predict(any())
         }
@@ -50,10 +53,10 @@ class GesturePredictorTest {
         assertThat(mPredictor.hasOpenEvent).isFalse()
         every { mDetectorHelper.predict(any()) } returns Label.OTHER
         for (i in 0..5) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
         assertThat(mPredictor.hasOpenEvent).isFalse()
-        assertThat(events).isEmpty()
+        assertThat(mEvents).isEmpty()
     }
 
     @Test
@@ -61,16 +64,16 @@ class GesturePredictorTest {
         // Send some WASHING label to simulate an event
         every { mDetectorHelper.predict(any()) } returns Label.WASHING
         for (i in 0..5) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
         assertThat(mPredictor.hasOpenEvent).isTrue()
-        assertThat(events).isEmpty()
+        assertThat(mEvents).isEmpty()
 
         // Send 1 (less than N) OTHER labels
         every { mDetectorHelper.predict(any()) } returns Label.OTHER
-        mPredictor.onNewData(floatArrayOf())
+        mPredictor.onNewData(mMockWindow)
         assertThat(mPredictor.hasOpenEvent).isTrue()
-        assertThat(events).isEmpty()
+        assertThat(mEvents).isEmpty()
     }
 
     @Test
@@ -78,68 +81,68 @@ class GesturePredictorTest {
         // Send some WASHING label to simulate an event
         every { mDetectorHelper.predict(any()) } returns Label.WASHING
         for (i in 0..5) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
         assertThat(mPredictor.hasOpenEvent).isTrue()
-        assertThat(events).isEmpty()
+        assertThat(mEvents).isEmpty()
 
         // Send more than N OTHER labels
         every { mDetectorHelper.predict(any()) } returns Label.OTHER
         for (i in 0..6) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
         assertThat(mPredictor.hasOpenEvent).isFalse()
-        assertThat(events).isNotEmpty()
-        assertThat(events).hasSize(1)
-        assertThat(events[0].type).isEqualTo(HandEventType.WASHING)
-        assertThat(events[0].nSamples).isEqualTo(6)
+        assertThat(mEvents).isNotEmpty()
+        assertThat(mEvents).hasSize(1)
+        assertThat(mEvents[0].type).isEqualTo(HandEventType.WASHING)
+        assertThat(mEvents[0].nSamples).isEqualTo(6)
     }
 
     @Test
     fun `onNewData opens a new event after receiving WASHING label`() {
         assertThat(mPredictor.hasOpenEvent).isFalse()
-        assertThat(events).isEmpty()
+        assertThat(mEvents).isEmpty()
         // Send a WASHING label to open a new event
         every { mDetectorHelper.predict(any()) } returns Label.WASHING
-        mPredictor.onNewData(floatArrayOf())
+        mPredictor.onNewData(mMockWindow)
         assertThat(mPredictor.hasOpenEvent).isTrue()
-        assertThat(events).isEmpty()
+        assertThat(mEvents).isEmpty()
     }
 
     @Test
     fun `onNewData opens a new event after receiving RUBBING label`() {
         assertThat(mPredictor.hasOpenEvent).isFalse()
-        assertThat(events).isEmpty()
+        assertThat(mEvents).isEmpty()
         // Send a RUBBING label to open a new event
         every { mDetectorHelper.predict(any()) } returns Label.RUBBING
-        mPredictor.onNewData(floatArrayOf())
+        mPredictor.onNewData(mMockWindow)
         assertThat(mPredictor.hasOpenEvent).isTrue()
-        assertThat(events).isEmpty()
+        assertThat(mEvents).isEmpty()
     }
 
     @Test
     fun `onNewData appends labels to an open event`() {
         // Send one WASHING label to open a new event
         every { mDetectorHelper.predict(any()) } returns Label.WASHING
-        mPredictor.onNewData(floatArrayOf())
+        mPredictor.onNewData(mMockWindow)
         // Send some WASHING labels to simulate an event
         every { mDetectorHelper.predict(any()) } returns Label.WASHING
         for (i in 0..9) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
         assertThat(mPredictor.hasOpenEvent).isTrue()
-        assertThat(events).isEmpty()
+        assertThat(mEvents).isEmpty()
 
         // Send more than N OTHER labels to close the current event
         every { mDetectorHelper.predict(any()) } returns Label.OTHER
         for (i in 0..GesturePredictor.MAX_N_DIFFERENT_LABELS) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
         assertThat(mPredictor.hasOpenEvent).isFalse()
-        assertThat(events).isNotEmpty()
-        assertThat(events).hasSize(1)
-        assertThat(events[0].type).isEqualTo(HandEventType.WASHING)
-        assertThat(events[0].nSamples).isEqualTo(11)
+        assertThat(mEvents).isNotEmpty()
+        assertThat(mEvents).hasSize(1)
+        assertThat(mEvents[0].type).isEqualTo(HandEventType.WASHING)
+        assertThat(mEvents[0].nSamples).isEqualTo(11)
     }
 
     @Test
@@ -147,19 +150,19 @@ class GesturePredictorTest {
         // Send some WASHING labels to simulate an event
         every { mDetectorHelper.predict(any()) } returns Label.WASHING
         for (i in 0..9) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
         // Send more than N OTHER labels to close the current event
         every { mDetectorHelper.predict(any()) } returns Label.OTHER
         for (i in 0..GesturePredictor.MAX_N_DIFFERENT_LABELS) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
 
         assertThat(mPredictor.hasOpenEvent).isFalse()
-        assertThat(events).isNotEmpty()
-        assertThat(events).hasSize(1)
-        assertThat(events[0].type).isEqualTo(HandEventType.WASHING)
-        assertThat(events[0].nSamples).isEqualTo(10)
+        assertThat(mEvents).isNotEmpty()
+        assertThat(mEvents).hasSize(1)
+        assertThat(mEvents[0].type).isEqualTo(HandEventType.WASHING)
+        assertThat(mEvents[0].nSamples).isEqualTo(10)
     }
 
     @Test
@@ -167,19 +170,19 @@ class GesturePredictorTest {
         // Send some RUBBING labels to simulate an event
         every { mDetectorHelper.predict(any()) } returns Label.RUBBING
         for (i in 0..9) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
         // Send more than N OTHER labels to close the current event
         every { mDetectorHelper.predict(any()) } returns Label.OTHER
         for (i in 0..GesturePredictor.MAX_N_DIFFERENT_LABELS) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
 
         assertThat(mPredictor.hasOpenEvent).isFalse()
-        assertThat(events).isNotEmpty()
-        assertThat(events).hasSize(1)
-        assertThat(events[0].type).isEqualTo(HandEventType.RUBBING)
-        assertThat(events[0].nSamples).isEqualTo(10)
+        assertThat(mEvents).isNotEmpty()
+        assertThat(mEvents).hasSize(1)
+        assertThat(mEvents[0].type).isEqualTo(HandEventType.RUBBING)
+        assertThat(mEvents[0].nSamples).isEqualTo(10)
     }
 
     @Test
@@ -187,24 +190,24 @@ class GesturePredictorTest {
         // Send some RUBBING to simulate an event
         every { mDetectorHelper.predict(any()) } returns Label.RUBBING
         for (i in 0..4) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
         // Send more WASHING labels than RUBBING
         every { mDetectorHelper.predict(any()) } returns Label.WASHING
         for (i in 0..9) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
         // Send more than N OTHER labels to close the current event
         every { mDetectorHelper.predict(any()) } returns Label.OTHER
         for (i in 0..GesturePredictor.MAX_N_DIFFERENT_LABELS) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
 
         assertThat(mPredictor.hasOpenEvent).isFalse()
-        assertThat(events).isNotEmpty()
-        assertThat(events).hasSize(1)
-        assertThat(events[0].type).isEqualTo(HandEventType.WASHING)
-        assertThat(events[0].nSamples).isEqualTo(15)
+        assertThat(mEvents).isNotEmpty()
+        assertThat(mEvents).hasSize(1)
+        assertThat(mEvents[0].type).isEqualTo(HandEventType.WASHING)
+        assertThat(mEvents[0].nSamples).isEqualTo(15)
     }
 
     @Test
@@ -212,24 +215,24 @@ class GesturePredictorTest {
         // Send some RUBBING to simulate an event
         every { mDetectorHelper.predict(any()) } returns Label.RUBBING
         for (i in 0..9) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
         // Send less WASHING labels than RUBBING
         every { mDetectorHelper.predict(any()) } returns Label.WASHING
         for (i in 0..4) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
         // Send more than N OTHER labels to close the current event
         every { mDetectorHelper.predict(any()) } returns Label.OTHER
         for (i in 0..GesturePredictor.MAX_N_DIFFERENT_LABELS) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
 
         assertThat(mPredictor.hasOpenEvent).isFalse()
-        assertThat(events).isNotEmpty()
-        assertThat(events).hasSize(1)
-        assertThat(events[0].type).isEqualTo(HandEventType.RUBBING)
-        assertThat(events[0].nSamples).isEqualTo(15)
+        assertThat(mEvents).isNotEmpty()
+        assertThat(mEvents).hasSize(1)
+        assertThat(mEvents[0].type).isEqualTo(HandEventType.RUBBING)
+        assertThat(mEvents[0].nSamples).isEqualTo(15)
     }
 
     @Test
@@ -237,46 +240,46 @@ class GesturePredictorTest {
         // Send some RUBBING to simulate an event
         every { mDetectorHelper.predict(any()) } returns Label.RUBBING
         for (i in 0..4) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
         // Send same WASHING labels as RUBBING
         every { mDetectorHelper.predict(any()) } returns Label.WASHING
         for (i in 0..4) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
         // Send more than N OTHER labels to close the current event
         every { mDetectorHelper.predict(any()) } returns Label.OTHER
         for (i in 0..GesturePredictor.MAX_N_DIFFERENT_LABELS) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
 
         assertThat(mPredictor.hasOpenEvent).isFalse()
-        assertThat(events).isNotEmpty()
-        assertThat(events).hasSize(1)
-        assertThat(events[0].type).isEqualTo(HandEventType.RUBBING)
-        assertThat(events[0].nSamples).isEqualTo(10)
+        assertThat(mEvents).isNotEmpty()
+        assertThat(mEvents).hasSize(1)
+        assertThat(mEvents[0].type).isEqualTo(HandEventType.RUBBING)
+        assertThat(mEvents[0].nSamples).isEqualTo(10)
 
         // Send some WASHING to simulate an event
         every { mDetectorHelper.predict(any()) } returns Label.WASHING
         for (i in 0..4) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
         // Send same RUBBING labels as RUBBING
         every { mDetectorHelper.predict(any()) } returns Label.RUBBING
         for (i in 0..4) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
         // Send more than N OTHER labels to close the current event
         every { mDetectorHelper.predict(any()) } returns Label.OTHER
         for (i in 0..GesturePredictor.MAX_N_DIFFERENT_LABELS) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
 
         assertThat(mPredictor.hasOpenEvent).isFalse()
-        assertThat(events).isNotEmpty()
-        assertThat(events).hasSize(2)
-        assertThat(events[1].type).isEqualTo(HandEventType.WASHING)
-        assertThat(events[1].nSamples).isEqualTo(10)
+        assertThat(mEvents).isNotEmpty()
+        assertThat(mEvents).hasSize(2)
+        assertThat(mEvents[1].type).isEqualTo(HandEventType.WASHING)
+        assertThat(mEvents[1].nSamples).isEqualTo(10)
     }
 
     @Test
@@ -284,35 +287,35 @@ class GesturePredictorTest {
         // Send some RUBBING to simulate an event
         every { mDetectorHelper.predict(any()) } returns Label.RUBBING
         for (i in 0..4) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
         // Send less than N OTHER labels to keep the event open
         every { mDetectorHelper.predict(any()) } returns Label.OTHER
-        mPredictor.onNewData(floatArrayOf())
+        mPredictor.onNewData(mMockWindow)
         // Send some WASHING labels to simulate an event
         every { mDetectorHelper.predict(any()) } returns Label.WASHING
         for (i in 0..5) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
         // Send less than N OTHER labels to keep the event open
         every { mDetectorHelper.predict(any()) } returns Label.OTHER
-        mPredictor.onNewData(floatArrayOf())
-        mPredictor.onNewData(floatArrayOf())
+        mPredictor.onNewData(mMockWindow)
+        mPredictor.onNewData(mMockWindow)
         // Send some WASHING labels to simulate an event
         every { mDetectorHelper.predict(any()) } returns Label.WASHING
         for (i in 0..5) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
         // Send more than N OTHER labels to close the current event
         every { mDetectorHelper.predict(any()) } returns Label.OTHER
         for (i in 0..GesturePredictor.MAX_N_DIFFERENT_LABELS) {
-            mPredictor.onNewData(floatArrayOf())
+            mPredictor.onNewData(mMockWindow)
         }
 
         assertThat(mPredictor.hasOpenEvent).isFalse()
-        assertThat(events).isNotEmpty()
-        assertThat(events).hasSize(1)
-        assertThat(events[0].type).isEqualTo(HandEventType.WASHING)
-        assertThat(events[0].nSamples).isEqualTo(20)
+        assertThat(mEvents).isNotEmpty()
+        assertThat(mEvents).hasSize(1)
+        assertThat(mEvents[0].type).isEqualTo(HandEventType.WASHING)
+        assertThat(mEvents[0].nSamples).isEqualTo(20)
     }
 }
