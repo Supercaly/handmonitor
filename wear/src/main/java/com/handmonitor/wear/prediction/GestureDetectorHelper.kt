@@ -110,15 +110,14 @@ class GestureDetectorHelper {
     /**
      * Predict a label from [input] data.
      *
-     * @param[input] A [FloatArray] with raw accelerometer and
+     * @param[input] A [FloatBuffer] with raw accelerometer and
      * gyroscope data.
      * @return The predicted [Label].
      */
-    fun predict(input: FloatArray): Label {
-        val inputBuffer = FloatBuffer.wrap(input)
+    fun predict(input: FloatBuffer): Label {
         val outputBuffer = FloatBuffer.allocate(6)
 
-        mInterpreter.run(inputBuffer, outputBuffer)
+        mInterpreter.run(input, outputBuffer)
         return getLabel(outputBuffer)
     }
 }

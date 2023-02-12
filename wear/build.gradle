@@ -63,7 +63,7 @@ dependencies {
 
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
 
-    implementation(project(path: ":sensorslib"))
+    implementation project(path: ":sensorslib")
 
     implementation "org.tensorflow:tensorflow-lite:$tflite_version"
     implementation "org.tensorflow:tensorflow-lite-gpu:$tflite_version"

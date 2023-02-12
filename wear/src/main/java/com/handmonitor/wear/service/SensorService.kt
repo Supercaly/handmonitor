@@ -4,8 +4,17 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
-import com.handmonitor.sensorslib.SensorReaderHelper
+import com.handmonitor.sensorslib.SensorWindowProducer
+import com.handmonitor.sensorslib.asFlow
 import com.handmonitor.wear.prediction.GesturePredictor
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Android Service to process sensor data.
@@ -18,16 +27,17 @@ class SensorService : Service() {
     companion object {
         private const val TAG = "SensorService"
         private const val SAMPLING_WINDOW_SIZE = 128
-        private const val SAMPLING_PERIOD_MS = 20
+        private const val SAMPLING_PERIOD_MS = 20L
     }
 
-    private val mGesturePredictor: GesturePredictor = GesturePredictor(this)
-    private val mSensorReaderHelper: SensorReaderHelper = SensorReaderHelper(
-        this,
-        mGesturePredictor,
-        SAMPLING_WINDOW_SIZE,
-        SAMPLING_PERIOD_MS
-    )
+    private val mServiceScope = CoroutineScope(Dispatchers.Default + Job())
+    private val mProducer =
+        SensorWindowProducer(
+            this@SensorService,
+            SAMPLING_PERIOD_MS,
+            SAMPLING_WINDOW_SIZE
+        )
+    private val mGesturePredictor: GesturePredictor = GesturePredictor(this@SensorService)
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -39,12 +49,18 @@ class SensorService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand: Service started!")
-        mSensorReaderHelper.start()
+        mServiceScope.launch {
+            withContext(Dispatchers.Default) {
+                mProducer.asFlow().onEach {
+                    mGesturePredictor.onNewData(it)
+                }.collect()
+            }
+        }
         return START_STICKY
     }
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy: Service stopped!")
-        mSensorReaderHelper.stop()
+        mServiceScope.cancel()
     }
 }
