@@ -68,7 +68,7 @@ dependencies {
     implementation "org.tensorflow:tensorflow-lite:$tflite_version"
     implementation "org.tensorflow:tensorflow-lite-gpu:$tflite_version"
     implementation "org.tensorflow:tensorflow-lite-gpu-api:$tflite_version"
-//    implementation "org.tensorflow:tensorflow-lite-select-tf-ops:$tflite_version"
+    implementation "org.tensorflow:tensorflow-lite-select-tf-ops:$tflite_version"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_version"
