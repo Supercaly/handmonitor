@@ -21,8 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
-import com.handmonitor.mltest.TestService
 import com.handmonitor.mltest.presentation.theme.HandMonitorTheme
+import com.handmonitor.mltest.service.TestService
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
