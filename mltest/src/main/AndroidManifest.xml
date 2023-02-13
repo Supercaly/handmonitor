@@ -31,7 +31,7 @@
         </activity>
 
         <service
-            android:name=".TestService"
+            android:name=".service.TestService"
             android:exported="false" />
     </application>
 </manifest>
