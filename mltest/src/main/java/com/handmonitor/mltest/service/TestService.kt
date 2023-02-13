@@ -81,39 +81,6 @@ class TestService : Service() {
         return START_STICKY
     }
 
-/*
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d(TAG, "onStartCommand: ")
-        mServiceScope.launch {
-            withContext(Dispatchers.Default) {
-                mProducer.asFlow().take(MAX_REPETITION).withIndex().onEach {
-                    val startTimeNs = System.nanoTime()
-                    val label = mMlHelper.inference(it.value)
-                    val time = System.nanoTime() - startTimeNs
-                    mTimes.add(time)
-                    Log.d(
-                        TAG, "onNewData: ${it.index} Predicted label $label: $time"
-                    )
-                }.onCompletion {
-                    val mean =
-                        mTimes.fold(0L) { a, v -> a + v } / MAX_REPETITION.toFloat()
-                    val std =
-                        sqrt(mTimes.fold(0.0) { a, v -> a + v * v - mean * mean } / MAX_REPETITION - 1)
-                    Log.i(
-                        TAG, "onNewData: model $MODEL_NAME"
-                    )
-                    Log.i(
-                        TAG, "onNewData: mean: ${mean / 1e6}ms std: ${std / 1e6}ms"
-                    )
-                    stopSelf()
-                }.collect()
-            }
-
-        }
-        return START_STICKY
-    }
-*/
-
     override fun onDestroy() {
         Log.d(TAG, "onDestroy: ")
         mServiceScope.cancel()
