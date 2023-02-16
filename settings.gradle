@@ -11,56 +11,6 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
     }
-    versionCatalogs {
-        libs {
-            version('core_ktx', '1.9.0')
-            version('coroutines_android', '1.6.4')
-            version('junit5', '5.9.2')
-            version('mockk', '1.13.4')
-            version('truth', '1.1.3')
-            version('lifecycle_runtime', '2.6.0-beta01')
-            version('play_services_wearable', '18.0.0')
-            version('legacy_support_v4', '1.0.0')
-            version('compose', '1.4.0-beta01')
-            version('wear_compose', '1.2.0-alpha04')
-            version('activity_compose', '1.8.0-alpha01')
-            version('tflite', '2.11.0')
-            version('room', '2.5.0')
-            version('composeCompiler', '1.4.2')
-
-            library('core', 'androidx.core', 'core-ktx').versionRef('core_ktx')
-
-            library('coroutines-android', 'org.jetbrains.kotlinx', 'kotlinx-coroutines-android').versionRef('coroutines_android')
-            library('coroutines-test', 'org.jetbrains.kotlinx', 'kotlinx-coroutines-test').versionRef('coroutines_android')
-
-            library('junit-api', 'org.junit.jupiter', 'junit-jupiter-api').versionRef('junit5')
-            library('junit-engine', 'org.junit.jupiter', 'junit-jupiter-engine').versionRef('junit5')
-
-            library('mockk', 'io.mockk', 'mockk').versionRef('mockk')
-            library('truth', 'com.google.truth', 'truth').versionRef('truth')
-
-            library('playServices-wearable', 'com.google.android.gms', 'play-services-wearable').versionRef('play_services_wearable')
-            library('legacySupportV4', 'androidx.legacy', 'legacy-support-v4').versionRef('legacy_support_v4')
-            library('lifecycleRuntime', 'androidx.lifecycle', 'lifecycle-runtime-ktx').versionRef('lifecycle_runtime')
-
-            library('compose.ui', 'androidx.compose.ui', 'ui').versionRef('compose')
-            library('compose.preview', 'androidx.compose.ui', 'ui-tooling-preview').versionRef('compose')
-            library('compose.wear.material', 'androidx.wear.compose', 'compose-material').versionRef('wear_compose')
-            library('compose.wear.foundation', 'androidx.wear.compose', 'compose-foundation').versionRef('wear_compose')
-            library('compose.activity', 'androidx.activity', 'activity-compose').versionRef('activity_compose')
-            library('compose.tooling', 'androidx.compose.ui', 'ui-tooling').versionRef('compose')
-            library('compose.testManifest', 'androidx.compose.ui', 'ui-test-manifest').versionRef('compose')
-
-            library('tflite.core', 'org.tensorflow', 'tensorflow-lite').versionRef('tflite')
-            library('tflite.gpu', 'org.tensorflow', 'tensorflow-lite-gpu').versionRef('tflite')
-            library('tflite.gpuApi', 'org.tensorflow', 'tensorflow-lite-gpu-api').versionRef('tflite')
-
-            library('room.runtime', 'androidx.room','room-runtime').versionRef('room')
-            library('room.compiler', 'androidx.room','room-compiler').versionRef('room')
-            library('room.kotlin', 'androidx.room','room-ktx').versionRef('room')
-            library('room.testing', 'androidx.room','room-testing').versionRef('room')
-        }
-    }
 }
 
 rootProject.name = "HandMonitor"
