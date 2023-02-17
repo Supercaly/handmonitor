@@ -9,7 +9,7 @@ play_services_wearable = '18.0.0'
 legacy_support_v4 = '1.0.0'
 compose = '1.4.0-beta01'
 wear_compose = '1.2.0-alpha04'
-activity_compose = '1.8.0-alpha01'
+activity_compose = '1.6.1'
 tflite = '2.11.0'
 room = '2.5.0'
 
