@@ -15,6 +15,12 @@ room = '2.5.0'
 
 composeCompiler = '1.4.2'
 
+android_plugin = '7.4.1'
+kotlin_plugin = '1.8.10'
+junit5_plugin = '1.8.2.1'
+ktlint_plugin = '11.2.0'
+versions_plugin = '0.45.0'
+
 [libraries]
 core = { module = 'androidx.core:core-ktx', version.ref = 'core_ktx' }
 
@@ -47,3 +53,11 @@ room-runtime = { module = 'androidx.room:room-runtime', version.ref = 'room' }
 room-compiler = { module = 'androidx.room:room-compiler', version.ref = 'room' }
 room-kotlin = { module = 'androidx.room:room-ktx', version.ref = 'room' }
 room-testing = { module = 'androidx.room:room-testing', version.ref = 'room' }
+
+[plugins]
+androidApplicationPlugin = { id = 'com.android.application', version.ref = 'android_plugin' }
+androidLibraryPlugin = { id = 'com.android.library', version.ref = 'android_plugin' }
+kotlinPlugin = { id = 'org.jetbrains.kotlin.android', version.ref = 'kotlin_plugin' }
+junit5Plugin = { id = 'de.mannodermaus.android-junit5', version.ref = 'junit5_plugin' }
+ktlintPlugin = { id = 'org.jlleitschuh.gradle.ktlint', version.ref = 'ktlint_plugin' }
+versionsPlugin = { id = 'com.github.ben-manes.versions', version.ref = 'versions_plugin' }

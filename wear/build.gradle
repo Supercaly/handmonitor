@@ -1,67 +1,23 @@
 plugins {
-    id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
+    id 'handmonitor.android-app-conventions'
+    id 'handmonitor.android-compose-conventions'
     id 'kotlin-kapt'
-    id 'de.mannodermaus.android-junit5'
-    id 'org.jlleitschuh.gradle.ktlint'
 }
 
 android {
     namespace 'com.handmonitor.wear'
-    compileSdk 33
 
     defaultConfig {
         applicationId "com.handmonitor.wear"
-        minSdk 28
-        targetSdk 33
         versionCode 1
         versionName "1.0"
-        vectorDrawables {
-            useSupportLibrary true
-        }
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-    buildFeatures {
-        compose true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion libs.versions.composeCompiler.get()
-    }
-    packagingOptions {
-        resources {
-            excludes += '/META-INF/{AL2.0,LGPL2.1}'
-        }
     }
 }
 
 dependencies {
-    implementation libs.core
     implementation libs.coroutines.android
 
     implementation libs.playServices.wearable
-    implementation libs.legacySupportV4
-    implementation libs.lifecycleRuntime
-
-    implementation libs.compose.ui
-    implementation libs.compose.preview
-    implementation libs.compose.activity
-    implementation libs.compose.wear.material
-    implementation libs.compose.wear.foundation
-    debugImplementation libs.compose.tooling
-    debugImplementation libs.compose.testManifest
 
     implementation project(path: ":sensorslib")
 
@@ -73,9 +29,4 @@ dependencies {
     kapt libs.room.compiler
     implementation libs.room.kotlin
     testImplementation libs.room.testing
-
-    testImplementation libs.junit.api
-    testRuntimeOnly libs.junit.engine
-    testImplementation libs.mockk
-    testImplementation libs.truth
 }

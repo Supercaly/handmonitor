@@ -1,0 +1,25 @@
+plugins {
+    id 'com.android.application'
+    id 'handmonitor.android-base-conventions'
+}
+
+android {
+    defaultConfig {
+        minSdk 28
+
+        vectorDrawables {
+            useSupportLibrary true
+        }
+    }
+
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+}
+
+dependencies {
+    implementation libs.legacySupportV4
+    implementation libs.lifecycleRuntime
+}
