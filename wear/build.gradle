@@ -16,15 +16,9 @@ android {
 
 dependencies {
     implementation libs.coroutines.android
-
     implementation libs.playServices.wearable
-
     implementation project(path: ":sensorslib")
-
-    implementation libs.tflite.core
-    implementation libs.tflite.gpu
-    implementation libs.tflite.gpuApi
-
+    implementation libs.bundles.tflite
     implementation libs.room.runtime
     kapt libs.room.compiler
     implementation libs.room.kotlin
