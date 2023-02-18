@@ -154,12 +154,13 @@ class GesturePredictor {
      * @see [closeCurrentEvent]
      */
     private fun getEventType(): HandEventType =
-        if (mWashingLabelsCnt > mRubbingLabelsCnt)
+        if (mWashingLabelsCnt > mRubbingLabelsCnt) {
             HandEventType.WASHING
-        else if (mRubbingLabelsCnt > mWashingLabelsCnt)
+        } else if (mRubbingLabelsCnt > mWashingLabelsCnt) {
             HandEventType.RUBBING
-        else
+        } else {
             mEventOpenType
+        }
 
     /**
      * Close the currently open hand event.
