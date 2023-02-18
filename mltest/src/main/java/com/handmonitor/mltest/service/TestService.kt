@@ -29,7 +29,7 @@ class TestService : Service() {
             "conv1d_step1_100_256_1024.tflite",
             "conv1d_step1_100_1024_256.tflite",
             "lstm_step1_100_64_256.tflite",
-            "lstm_step1_100_512_1024.tflite",
+            "lstm_step1_100_512_1024.tflite"
             // Add paths to models to test here
         )
     }

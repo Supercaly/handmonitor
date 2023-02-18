@@ -43,14 +43,14 @@ fun WearApp() {
                 .background(MaterialTheme.colors.background)
                 .fillMaxWidth(),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             val context = LocalContext.current
             Button(
                 onClick = {
                     context.startService(Intent(context, TestService::class.java))
                 },
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(text = "Start Test")
             }
