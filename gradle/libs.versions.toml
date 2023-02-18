@@ -1,0 +1,66 @@
+[versions]
+core_ktx = '1.9.0'
+coroutines_android = '1.6.4'
+junit5 = '5.9.2'
+mockk = '1.13.4'
+truth = '1.1.3'
+lifecycle_runtime = '2.6.0-beta01'
+play_services_wearable = '18.0.0'
+legacy_support_v4 = '1.0.0'
+compose = '1.4.0-beta01'
+wear_compose = '1.2.0-alpha04'
+activity_compose = '1.6.1'
+tflite = '2.11.0'
+room = '2.5.0'
+
+composeCompiler = '1.4.2'
+
+android_plugin = '7.4.1'
+kotlin_plugin = '1.8.10'
+junit5_plugin = '1.8.2.1'
+ktlint_plugin = '11.2.0'
+versions_plugin = '0.45.0'
+
+[libraries]
+core = { module = 'androidx.core:core-ktx', version.ref = 'core_ktx' }
+
+coroutines-android = { module = 'org.jetbrains.kotlinx:kotlinx-coroutines-android', version.ref = 'coroutines_android' }
+coroutines-test = { module = 'org.jetbrains.kotlinx:kotlinx-coroutines-test', version.ref = 'coroutines_android' }
+
+junit-api = { module = 'org.junit.jupiter:junit-jupiter-api', version.ref = 'junit5' }
+junit-engine = { module = 'org.junit.jupiter:junit-jupiter-engine', version.ref = 'junit5' }
+
+mockk = { module = 'io.mockk:mockk', version.ref = 'mockk' }
+truth = { module = 'com.google.truth:truth', version.ref = 'truth' }
+
+playServices-wearable = { module = 'com.google.android.gms:play-services-wearable', version.ref = 'play_services_wearable' }
+legacySupportV4 = { module = 'androidx.legacy:legacy-support-v4', version.ref = 'legacy_support_v4' }
+lifecycleRuntime = { module = 'androidx.lifecycle:lifecycle-runtime-ktx', version.ref = 'lifecycle_runtime' }
+
+compose-ui = { module = 'androidx.compose.ui:ui', version.ref = 'compose' }
+compose-preview = { module = 'androidx.compose.ui:ui-tooling-preview', version.ref = 'compose' }
+compose-wear-material = { module = 'androidx.wear.compose:compose-material', version.ref = 'wear_compose' }
+compose-wear-foundation = { module = 'androidx.wear.compose:compose-foundation', version.ref = 'wear_compose' }
+compose-activity = { module = 'androidx.activity:activity-compose', version.ref = 'activity_compose' }
+compose-tooling = { module = 'androidx.compose.ui:ui-tooling', version.ref = 'compose' }
+compose-testManifest = { module = 'androidx.compose.ui:ui-test-manifest', version.ref = 'compose' }
+
+tflite-core = { module = 'org.tensorflow:tensorflow-lite', version.ref = 'tflite' }
+tflite-gpu = { module = 'org.tensorflow:tensorflow-lite-gpu', version.ref = 'tflite' }
+tflite-gpuApi = { module = 'org.tensorflow:tensorflow-lite-gpu-api', version.ref = 'tflite' }
+
+room-runtime = { module = 'androidx.room:room-runtime', version.ref = 'room' }
+room-compiler = { module = 'androidx.room:room-compiler', version.ref = 'room' }
+room-kotlin = { module = 'androidx.room:room-ktx', version.ref = 'room' }
+room-testing = { module = 'androidx.room:room-testing', version.ref = 'room' }
+
+[bundles]
+tflite = ['tflite-core', 'tflite-gpu', 'tflite-gpuApi']
+
+[plugins]
+androidApplicationPlugin = { id = 'com.android.application', version.ref = 'android_plugin' }
+androidLibraryPlugin = { id = 'com.android.library', version.ref = 'android_plugin' }
+kotlinPlugin = { id = 'org.jetbrains.kotlin.android', version.ref = 'kotlin_plugin' }
+junit5Plugin = { id = 'de.mannodermaus.android-junit5', version.ref = 'junit5_plugin' }
+ktlintPlugin = { id = 'org.jlleitschuh.gradle.ktlint', version.ref = 'ktlint_plugin' }
+versionsPlugin = { id = 'com.github.ben-manes.versions', version.ref = 'versions_plugin' }

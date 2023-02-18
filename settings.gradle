@@ -12,6 +12,7 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
+
 rootProject.name = "HandMonitor"
 include ':wear'
 include ':sensorslib'
