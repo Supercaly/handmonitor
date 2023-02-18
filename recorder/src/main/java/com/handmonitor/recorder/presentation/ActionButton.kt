@@ -27,8 +27,11 @@ fun ActionButton(
         secondaryLabel = {
             Text(
                 text = "${formatTime(actionTimeRange.remaining)}/${formatTime(actionTimeRange.total)} min",
-                color = if (actionTimeRange.remaining < actionTimeRange.total)
-                    MaterialTheme.colors.onSurface else MaterialTheme.colors.error
+                color = if (actionTimeRange.remaining < actionTimeRange.total) {
+                    MaterialTheme.colors.onSurface
+                } else {
+                    MaterialTheme.colors.error
+                }
             )
         },
         icon = {

@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
                 intent.putExtra("action-type", it.name)
                 this.startService(intent)
                 this.bindService(intent, mRecorderViewModel.serviceConnection, 0)
-            },
+            }
         )
     }
     private val mRecorderRepository: RecorderRepository by lazy {
@@ -104,7 +104,7 @@ fun DefaultPreview() {
                 RecorderRepository(
                     AppDatabase.getDatabase(LocalContext.current)
                 ),
-                RecorderPreferences(LocalContext.current),
+                RecorderPreferences(LocalContext.current)
             ) {}
         )
     )

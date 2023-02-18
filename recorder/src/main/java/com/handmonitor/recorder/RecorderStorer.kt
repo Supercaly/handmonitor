@@ -4,13 +4,16 @@ import android.content.Context
 import com.handmonitor.recorder.data.Action
 import com.handmonitor.recorder.data.Recording
 import com.handmonitor.recorder.database.AppDatabase
+import com.handmonitor.sensorslib.SensorWindow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
 import java.io.OutputStreamWriter
 import java.util.UUID
 
-class RecorderStorer @Throws(FileNotFoundException::class) constructor(
+class RecorderStorer
+@Throws(FileNotFoundException::class)
+constructor(
     private val context: Context,
     val action: Action.Type
 ) {
@@ -25,8 +28,9 @@ class RecorderStorer @Throws(FileNotFoundException::class) constructor(
     private var mStartTime: Long = System.currentTimeMillis()
     private var mRecordingDuration: Long = 0L
 
-    fun recordData(data: FloatArray) {
-        for (i in data.indices step 6) {
+    fun recordWindow(window: SensorWindow) {
+        val data = window.buffer
+        for (i in 0 until data.capacity() step 6) {
             mFileStream.write(
                 "\"${action.ordinal}\"," + "${data[i + 0].format()}," +
                     "${data[i + 1].format()}," + "${data[i + 2].format()}," +
