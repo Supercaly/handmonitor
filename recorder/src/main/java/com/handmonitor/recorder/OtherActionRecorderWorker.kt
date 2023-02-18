@@ -6,8 +6,7 @@ import androidx.work.ListenableWorker.Result.Retry
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.handmonitor.recorder.data.Action
-import com.handmonitor.sensorslib.SensorDataHandler
-import com.handmonitor.sensorslib.SensorReaderHelper
+import com.handmonitor.sensorslib.SensorWindowProducer
 import kotlinx.coroutines.runBlocking
 
 class OtherActionRecorderWorker(
@@ -18,18 +17,11 @@ class OtherActionRecorderWorker(
         private const val TAG = "OtherActionRecorderWorker"
     }
 
-    private val mDataHandler = object : SensorDataHandler {
-        override fun onNewData(data: FloatArray) {
-            Log.d(TAG, "onNewData:")
-            mRecorderStorer.recordData(data)
-        }
-    }
-    private val mSensorReaderHelper: SensorReaderHelper =
-        SensorReaderHelper(
+    private val mSensorWindowProducer: SensorWindowProducer =
+        SensorWindowProducer(
             applicationContext,
-            mDataHandler,
-            100,
-            20
+            20L,
+            100
         )
     private val mRecorderStorer: RecorderStorer =
         RecorderStorer(
@@ -42,20 +34,26 @@ class OtherActionRecorderWorker(
     override fun doWork(): Result {
         Log.d(TAG, "doWork: record other action in background")
 
+        mSensorWindowProducer.setOnNewWindowListener {
+            Log.d(TAG, "onNewData:")
+            mRecorderStorer.recordWindow(it)
+        }
+
         if (mRecorderPreferences.isSomeoneRecording) {
             Log.w(TAG, "doWork: someone else is recording already")
-            return if (runAttemptCount < 2)
+            return if (runAttemptCount < 2) {
                 Result.retry()
-            else
+            } else {
                 Retry.failure()
+            }
         }
 
         mRecorderPreferences.isSomeoneRecording = true
-        mSensorReaderHelper.start()
+        mSensorWindowProducer.startSensors()
 
         Thread.sleep(60_000)
 
-        mSensorReaderHelper.stop()
+        mSensorWindowProducer.stopSensors()
         mRecorderStorer.stopRecording()
         runBlocking {
             mRecorderStorer.saveRecording()

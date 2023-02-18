@@ -2,6 +2,7 @@ package com.handmonitor.recorder
 
 import com.handmonitor.recorder.data.Action
 import com.handmonitor.recorder.database.AppDatabase
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.mapLatest
@@ -18,6 +19,7 @@ class RecorderRepository(database: AppDatabase) {
      * This parameter is a [Flow] of maps that are automatically
      * updated every time the underlying data changes.
      */
+    @OptIn(ExperimentalCoroutinesApi::class)
     val actionsTime: Flow<Map<Action.Type, Action.TimeRange>> =
         combine(
             database.recordingDao().getRecordingsForAction(Action.Type.HandWash.name)
@@ -73,7 +75,7 @@ class RecorderRepository(database: AppDatabase) {
                 Action.Type.FaceWash to Action.TimeRange(array[4]),
                 Action.Type.Write to Action.TimeRange(array[5]),
                 Action.Type.Type to Action.TimeRange(array[6]),
-                Action.Type.Housework to Action.TimeRange(array[7]),
+                Action.Type.Housework to Action.TimeRange(array[7])
             )
         }
 }

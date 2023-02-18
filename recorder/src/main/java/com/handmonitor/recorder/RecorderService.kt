@@ -9,8 +9,7 @@ import androidx.work.BackoffPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.handmonitor.recorder.data.Action
-import com.handmonitor.sensorslib.SensorDataHandler
-import com.handmonitor.sensorslib.SensorReaderHelper
+import com.handmonitor.sensorslib.SensorWindowProducer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -38,7 +37,7 @@ class RecorderService : Service() {
     companion object {
         private const val TAG = "RecorderService"
         private const val SAMPLING_WINDOW_SIZE = 100
-        private const val SAMPLING_PERIOD_MS = 20
+        private const val SAMPLING_PERIOD_MS = 20L
     }
 
     /**
@@ -69,15 +68,7 @@ class RecorderService : Service() {
     }
 
     private lateinit var mBinder: RecorderBinder
-    private val mActionStore = object : SensorDataHandler {
-        override fun onNewData(data: FloatArray) {
-            Log.d(TAG, "onNewData: ")
-            mRecorderStorer?.recordData(data)
-        }
-    }
-    private val mSensorReaderHelper: SensorReaderHelper = SensorReaderHelper(
-        this, mActionStore, SAMPLING_WINDOW_SIZE, SAMPLING_PERIOD_MS
-    )
+    private lateinit var mSensorWindowProducer: SensorWindowProducer
     private var mRecorderStorer: RecorderStorer? = null
     private lateinit var mRecorderPreferences: RecorderPreferences
 
@@ -87,6 +78,15 @@ class RecorderService : Service() {
     override fun onCreate() {
         Log.d(TAG, "onCreate: ")
 
+        mSensorWindowProducer = SensorWindowProducer(
+            this@RecorderService,
+            SAMPLING_PERIOD_MS,
+            SAMPLING_WINDOW_SIZE
+        )
+        mSensorWindowProducer.setOnNewWindowListener {
+            Log.d(TAG, "onNewData: ")
+            mRecorderStorer?.recordWindow(it)
+        }
         mRecorderPreferences = RecorderPreferences(this)
 
         mBinder = RecorderBinder()
@@ -106,7 +106,7 @@ class RecorderService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (!mSensorReaderHelper.isStarted) {
+        if (!mSensorWindowProducer.isListening) {
             val action = intent!!.getStringExtra("action-type")?.run {
                 Action.Type.valueOf(this)
             }
@@ -117,7 +117,7 @@ class RecorderService : Service() {
                 stopSelf()
                 return START_NOT_STICKY
             }
-            mSensorReaderHelper.start()
+            mSensorWindowProducer.startSensors()
 
             mRecorderPreferences.isSomeoneRecording = true
         }
@@ -133,7 +133,7 @@ class RecorderService : Service() {
 
     private fun stopRecording() {
         Log.d(TAG, "stopRecording: Stop recording ${mRecorderStorer?.action} action")
-        mSensorReaderHelper.stop()
+        mSensorWindowProducer.stopSensors()
         mRecorderStorer?.stopRecording()
 
         mRecorderPreferences.isSomeoneRecording = false
