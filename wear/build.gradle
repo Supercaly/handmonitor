@@ -17,7 +17,7 @@ android {
 dependencies {
     implementation libs.coroutines.android
     implementation libs.playServices.wearable
-    implementation project(path: ":sensorslib")
+    implementation project(path: ':sensorlib')
     implementation libs.bundles.tflite
     implementation libs.room.runtime
     kapt libs.room.compiler

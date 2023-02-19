@@ -3,7 +3,7 @@ package com.handmonitor.wear.prediction
 import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
-import com.handmonitor.sensorslib.SensorWindow
+import com.handmonitor.sensorlib.SensorWindow
 import com.handmonitor.wear.data.HandEvent
 import com.handmonitor.wear.data.HandEventType
 import com.handmonitor.wear.data.Label
