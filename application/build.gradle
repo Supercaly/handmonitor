@@ -8,7 +8,6 @@ android {
 
     defaultConfig {
         applicationId "com.handmonitor.wear"
-        minSdk 21
         versionCode 1
         versionName "1.0"
 

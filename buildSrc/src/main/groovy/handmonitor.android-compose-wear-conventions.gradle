@@ -1,0 +1,8 @@
+plugins {
+    id 'handmonitor.android-compose-conventions'
+}
+
+dependencies {
+    implementation libs.compose.wear.material
+    implementation libs.compose.wear.foundation
+}

@@ -1,6 +1,6 @@
 plugins {
-    id 'handmonitor.android-app-conventions'
-    id 'handmonitor.android-compose-conventions'
+    id 'handmonitor.android-app-wear-conventions'
+    id 'handmonitor.android-compose-wear-conventions'
 }
 
 android {
@@ -16,7 +16,6 @@ android {
 }
 
 dependencies {
-    implementation libs.playServices.wearable
     implementation project(path: ":sensorslib")
     implementation libs.bundles.tflite
     // TODO: Remove tflite select ops dependency if not needed or add it to version catalog

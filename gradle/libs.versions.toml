@@ -9,6 +9,7 @@ play_services_wearable = '18.0.0'
 legacy_support_v4 = '1.0.0'
 compose = '1.4.0-beta01'
 wear_compose = '1.2.0-alpha04'
+compose_lifecycle_viewmodel = '2.5.1'
 activity_compose = '1.6.1'
 tflite = '2.11.0'
 room = '2.5.0'
@@ -39,6 +40,7 @@ lifecycleRuntime = { module = 'androidx.lifecycle:lifecycle-runtime-ktx', versio
 
 compose-ui = { module = 'androidx.compose.ui:ui', version.ref = 'compose' }
 compose-preview = { module = 'androidx.compose.ui:ui-tooling-preview', version.ref = 'compose' }
+compose-lifecycleViewmodel = { module = 'androidx.lifecycle:lifecycle-viewmodel-compose', version.ref = 'compose_lifecycle_viewmodel' }
 compose-wear-material = { module = 'androidx.wear.compose:compose-material', version.ref = 'wear_compose' }
 compose-wear-foundation = { module = 'androidx.wear.compose:compose-foundation', version.ref = 'wear_compose' }
 compose-activity = { module = 'androidx.activity:activity-compose', version.ref = 'activity_compose' }
