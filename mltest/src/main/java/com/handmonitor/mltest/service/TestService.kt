@@ -4,8 +4,8 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
-import com.handmonitor.sensorslib.SensorWindowProducer
-import com.handmonitor.sensorslib.asFlow
+import com.handmonitor.sensorlib.SensorWindowProducer
+import com.handmonitor.sensorlib.asFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

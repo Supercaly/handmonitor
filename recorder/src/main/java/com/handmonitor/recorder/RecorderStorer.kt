@@ -4,7 +4,7 @@ import android.content.Context
 import com.handmonitor.recorder.data.Action
 import com.handmonitor.recorder.data.Recording
 import com.handmonitor.recorder.database.AppDatabase
-import com.handmonitor.sensorslib.SensorWindow
+import com.handmonitor.sensorlib.SensorWindow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
