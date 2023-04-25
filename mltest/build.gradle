@@ -1,0 +1,23 @@
+plugins {
+    id 'handmonitor.android-app-wear-conventions'
+    id 'handmonitor.android-compose-wear-conventions'
+}
+
+android {
+    namespace 'com.handmonitor.mltest'
+
+    defaultConfig {
+        applicationId "com.handmonitor.mltest"
+        versionName "1.0"
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+        }
+    }
+}
+
+dependencies {
+    implementation project(path: ":sensorlib")
+    implementation libs.bundles.tflite
+    // TODO: Remove tflite select ops dependency if not needed or add it to version catalog
+    implementation "org.tensorflow:tensorflow-lite-select-tf-ops:2.11.0"
+}

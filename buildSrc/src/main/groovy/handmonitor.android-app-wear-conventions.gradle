@@ -1,0 +1,13 @@
+plugins {
+    id 'handmonitor.android-app-conventions'
+}
+
+android {
+    defaultConfig {
+        minSdk 28
+    }
+}
+
+dependencies {
+    implementation libs.playServices.wearable
+}

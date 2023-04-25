@@ -1,6 +1,6 @@
 plugins {
-    id 'handmonitor.android-app-conventions'
-    id 'handmonitor.android-compose-conventions'
+    id 'handmonitor.android-app-wear-conventions'
+    id 'handmonitor.android-compose-wear-conventions'
     id 'kotlin-kapt'
 }
 
@@ -16,7 +16,6 @@ android {
 
 dependencies {
     implementation libs.coroutines.android
-    implementation libs.playServices.wearable
     implementation project(path: ':sensorlib')
     implementation libs.bundles.tflite
     implementation libs.room.runtime

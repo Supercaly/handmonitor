@@ -1,0 +1,20 @@
+plugins {
+    id 'handmonitor.android-app-conventions'
+    id 'handmonitor.android-compose-conventions'
+}
+
+android {
+    namespace 'com.handmonitor.wear'
+
+    defaultConfig {
+        applicationId "com.handmonitor.wear"
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+}
+
+dependencies {
+    implementation 'androidx.compose.material3:material3:1.1.0-alpha06'
+}

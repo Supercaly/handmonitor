@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Recorder</string>
+    <string name="recorder_service_description">Service that records actions from device sensors</string>
+
+    <string name="action_other">other</string>
+    <string name="action_hand_wash">hand wash</string>
+    <string name="action_hand_rub">hand rub</string>
+    <string name="action_eat">eat</string>
+    <string name="action_teeth_brush">brush teeth</string>
+    <string name="action_face_wash">face wash</string>
+    <string name="action_write">write</string>
+    <string name="action_type">type</string>
+    <string name="action_housework">housework</string>
+
+    <string name="action_list_title">Record Action</string>
+    <string name="recording_screen_title">recording</string>
+    <string name="recording_dialog_title">Save recording?</string>
+    <string name="recording_dialog_msg">Do you want to save the recorded action permanently?</string>
+</resources>

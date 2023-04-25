@@ -1,0 +1,25 @@
+plugins {
+    id 'handmonitor.android-app-wear-conventions'
+    id 'handmonitor.android-compose-wear-conventions'
+    id 'kotlin-kapt'
+}
+
+android {
+    namespace 'com.handmonitor.recorder'
+
+    defaultConfig {
+        applicationId "com.handmonitor.recorder"
+        versionCode 1
+        versionName "1.0"
+    }
+}
+
+dependencies {
+    // TODO: Move work version to catalog
+    implementation "androidx.work:work-runtime-ktx:2.8.0"
+    implementation project(path: ":sensorlib")
+    implementation libs.room.runtime
+    kapt libs.room.compiler
+    implementation libs.room.kotlin
+    testImplementation libs.room.testing
+}

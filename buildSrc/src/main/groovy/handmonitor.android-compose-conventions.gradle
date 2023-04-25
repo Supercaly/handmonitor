@@ -10,9 +10,8 @@ android {
 dependencies {
     implementation libs.compose.ui
     implementation libs.compose.activity
-    implementation libs.compose.wear.material
-    implementation libs.compose.wear.foundation
     implementation libs.compose.preview
+    implementation libs.compose.lifecycleViewmodel
     debugImplementation libs.compose.tooling
     debugImplementation libs.compose.testManifest
 }
