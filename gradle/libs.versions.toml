@@ -16,7 +16,7 @@ room = '2.5.0'
 
 composeCompiler = '1.4.2'
 
-android_plugin = '7.4.1'
+android_plugin = "8.0.0"
 kotlin_plugin = '1.8.10'
 junit5_plugin = '1.8.2.1'
 ktlint_plugin = '11.2.0'
