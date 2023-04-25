@@ -1,4 +1,4 @@
-package com.handmonitor.wear.ui.theme
+package com.handmonitor.wear.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
