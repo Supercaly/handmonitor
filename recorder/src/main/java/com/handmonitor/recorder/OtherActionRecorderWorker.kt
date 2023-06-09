@@ -6,7 +6,7 @@ import androidx.work.ListenableWorker.Result.Retry
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.handmonitor.recorder.data.Action
-import com.handmonitor.sensorlib.SensorWindowProducer
+import com.handmonitor.sensorlib.v2.SensorWindowProducer
 import kotlinx.coroutines.runBlocking
 
 class OtherActionRecorderWorker(

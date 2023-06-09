@@ -9,7 +9,7 @@ import androidx.work.BackoffPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.handmonitor.recorder.data.Action
-import com.handmonitor.sensorlib.SensorWindowProducer
+import com.handmonitor.sensorlib.v2.SensorWindowProducer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

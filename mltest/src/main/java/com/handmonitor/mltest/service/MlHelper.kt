@@ -2,7 +2,7 @@ package com.handmonitor.mltest.service
 
 import android.content.Context
 import android.util.Log
-import com.handmonitor.sensorlib.SensorWindow
+import com.handmonitor.sensorlib.v2.SensorWindow
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.gpu.CompatibilityList
 import org.tensorflow.lite.gpu.GpuDelegate
