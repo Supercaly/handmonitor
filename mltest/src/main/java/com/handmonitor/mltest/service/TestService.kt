@@ -1,11 +1,19 @@
 package com.handmonitor.mltest.service
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
-import com.handmonitor.sensorlib.SensorWindowProducer
-import com.handmonitor.sensorlib.asFlow
+import com.handmonitor.mltest.R
+import com.handmonitor.sensorlib.v1.SensorDataHandler
+import com.handmonitor.sensorlib.v1.SensorReaderHelper
+import com.handmonitor.sensorlib.v2.SensorWindowProducer
+import com.handmonitor.sensorlib.v2.asFlow
+import com.handmonitor.sensorlib.v3.SensorFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -13,68 +21,98 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlin.math.sqrt
 
 class TestService : Service() {
     companion object {
         private const val TAG = "TestService"
-        private const val MAX_REPETITION = 20
 
-        val models = listOf(
-            "conv1d_lstm_step1_100_256_512.tflite",
-            "conv1d_lstm_step1_100_256_1024.tflite",
-            "conv1d_step1_100_256_1024.tflite",
-            "conv1d_step1_100_1024_256.tflite",
-            "lstm_step1_100_64_256.tflite",
-            "lstm_step1_100_512_1024.tflite"
-            // Add paths to models to test here
-        )
+        private const val NOTIFICATION_CHANNEL_ID = "test_channel"
+
+        const val version = "v2"
+
+        const val sampling = 10L
+        const val size = 200
     }
 
     private val mServiceScope = CoroutineScope(Dispatchers.Default + Job())
+
+    private var t = System.currentTimeMillis()
+
+    private val cb = object : SensorDataHandler {
+        override fun onNewData(data: FloatArray) {
+            Log.d(TAG, "onNewData: ${System.currentTimeMillis() - t}")
+            t = System.currentTimeMillis()
+        }
+    }
+    private val rh = SensorReaderHelper(this@TestService, cb, sampling.toInt(), size)
+
+    private fun getNotification(): Notification {
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val channel = NotificationChannel(
+            NOTIFICATION_CHANNEL_ID,
+            "Test Service notifications channel",
+            NotificationManager.IMPORTANCE_HIGH
+        ).let {
+            it.description = "Test Service channel"
+            it.enableLights(true)
+            it
+        }
+        notificationManager.createNotificationChannel(channel)
+
+        return Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
+            .setContentTitle("Test Service")
+            .setContentText("This service is used to test sensorlib")
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setTicker("Ticker")
+            .build()
+    }
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
+    override fun onCreate() {
+        super.onCreate()
+        Log.d(TAG, "onCreate: ")
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand: ")
+
+        startForeground(5, getNotification())
+
         mServiceScope.launch {
-            withContext(Dispatchers.Default) {
-                models.forEach { model ->
-                    val mTimes = mutableListOf<Long>()
-                    val helper = MlHelper(this@TestService, model)
-                    var t = 0L
-                    SensorWindowProducer(this@TestService, 20L, 100).asFlow()
-                        .take(MAX_REPETITION)
+            Log.d(TAG, "onStartCommand: Start")
+
+            when (version) {
+                "v1" -> {
+                    rh.start()
+                }
+
+                "v2" -> {
+                    SensorWindowProducer(this@TestService, sampling, size).asFlow()
                         .onEach {
-                            val startTimeNs = System.nanoTime()
-                            val label = helper.inference(it)
-                            val time = System.nanoTime() - startTimeNs
-                            mTimes.add(time)
-                            Log.d(
-                                TAG,
-                                "onNewData: ${0} Predicted label $label: $time"
-                            )
-                            println("${System.currentTimeMillis() - t} ${it.hashCode()}")
+                            Log.d(TAG, "onEach: ${System.currentTimeMillis() - t}")
                             t = System.currentTimeMillis()
-                        }.onCompletion {
-                            val mean =
-                                mTimes.fold(0L) { a, v -> a + v } / MAX_REPETITION.toFloat()
-                            val std =
-                                sqrt(mTimes.fold(0.0) { a, v -> a + v * v - mean * mean } / MAX_REPETITION - 1)
-                            Log.i(
-                                TAG,
-                                "onNewData: model $model"
-                            )
-                            Log.i(
-                                TAG,
-                                "onNewData: mean: ${mean / 1e6}ms std: ${std / 1e6}ms"
-                            )
-                        }.collect()
+                        }
+                        .onCompletion {
+                            Log.d(TAG, "onCompletion: it=$it")
+                        }
+                        .collect()
+                }
+
+                "v3" -> {
+                    SensorFlow(this@TestService, sampling, size).asFlow()
+                        .onEach {
+                            Log.d(TAG, "onEach3: ${System.currentTimeMillis() - t}")
+                            t = System.currentTimeMillis()
+                        }
+                        .onCompletion {
+                            Log.d(TAG, "onCompletion3: ")
+                        }
+                        .collect()
                 }
             }
         }

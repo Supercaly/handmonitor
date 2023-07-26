@@ -2,7 +2,7 @@ package com.handmonitor.wear.prediction
 
 import android.util.Log
 import com.google.common.truth.Truth.assertThat
-import com.handmonitor.sensorlib.SensorWindow
+import com.handmonitor.sensorlib.v2.SensorWindow
 import com.handmonitor.wear.data.HandEvent
 import com.handmonitor.wear.data.HandEventType
 import com.handmonitor.wear.data.Label
