@@ -45,12 +45,11 @@ class MainActivity : ComponentActivity() {
                     Text(text = "${TestService.version},${TestService.sampling},${TestService.size}")
                     Button(
                         onClick = {
-
                             val intent = Intent(context, TestService::class.java)
                             context.startForegroundService(intent)
                             serviceStarted = true
                         },
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(text = if (!serviceStarted) "Start" else "Started")
                     }
