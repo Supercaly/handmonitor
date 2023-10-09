@@ -1,9 +1,9 @@
 [versions]
-core_ktx = '1.9.0'
-coroutines_android = '1.6.4'
-junit5 = '5.9.2'
-mockk = '1.13.4'
-truth = '1.1.3'
+core_ktx = '1.10.1'
+coroutines_android = '1.7.3'
+junit5 = '5.10.0'
+mockk = '1.13.5'
+truth = '1.1.5'
 lifecycle_runtime = '2.6.0-beta01'
 play_services_wearable = '18.0.0'
 legacy_support_v4 = '1.0.0'
@@ -11,16 +11,18 @@ compose = '1.4.0-beta01'
 wear_compose = '1.2.0-alpha04'
 compose_lifecycle_viewmodel = '2.5.1'
 activity_compose = '1.6.1'
-tflite = '2.11.0'
-room = '2.5.0'
+tflite = '2.13.0'
+room = '2.5.2'
+work_ktx = '2.8.1'
 
 composeCompiler = '1.4.2'
 
-android_plugin = "8.0.0"
+android_plugin = "8.1.2"
 kotlin_plugin = '1.8.10'
 junit5_plugin = '1.8.2.1'
 ktlint_plugin = '11.2.0'
 versions_plugin = '0.45.0'
+ksp_plugin =  '1.8.10-1.0.9'
 
 [libraries]
 core = { module = 'androidx.core:core-ktx', version.ref = 'core_ktx' }
@@ -56,6 +58,8 @@ room-compiler = { module = 'androidx.room:room-compiler', version.ref = 'room' }
 room-kotlin = { module = 'androidx.room:room-ktx', version.ref = 'room' }
 room-testing = { module = 'androidx.room:room-testing', version.ref = 'room' }
 
+work = { module = 'androidx.work:work-runtime-ktx', version.ref = 'work_ktx'}
+
 [bundles]
 tflite = ['tflite-core', 'tflite-gpu', 'tflite-gpuApi']
 
@@ -66,3 +70,4 @@ kotlinPlugin = { id = 'org.jetbrains.kotlin.android', version.ref = 'kotlin_plug
 junit5Plugin = { id = 'de.mannodermaus.android-junit5', version.ref = 'junit5_plugin' }
 ktlintPlugin = { id = 'org.jlleitschuh.gradle.ktlint', version.ref = 'ktlint_plugin' }
 versionsPlugin = { id = 'com.github.ben-manes.versions', version.ref = 'versions_plugin' }
+kspPlugin = { id = 'com.google.devtools.ksp', version.ref = 'ksp_plugin' }
