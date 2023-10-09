@@ -25,7 +25,8 @@ import com.handmonitor.recorder.database.dao.RecordingDao
  */
 @Database(
     version = 1,
-    entities = [Recording::class]
+    entities = [Recording::class],
+    exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     companion object {

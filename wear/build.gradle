@@ -1,7 +1,7 @@
 plugins {
     id 'handmonitor.android-app-wear-conventions'
     id 'handmonitor.android-compose-wear-conventions'
-    id 'kotlin-kapt'
+    id 'com.google.devtools.ksp'
 }
 
 android {
@@ -19,7 +19,7 @@ dependencies {
     implementation project(path: ':sensorlib')
     implementation libs.bundles.tflite
     implementation libs.room.runtime
-    kapt libs.room.compiler
+    ksp libs.room.compiler
     implementation libs.room.kotlin
     testImplementation libs.room.testing
 }
