@@ -24,12 +24,6 @@ import java.io.FileNotFoundException
 import java.time.Duration
 
 /**
- * Extension function that formats a [Float]
- * to 4 digits after the comma.
- */
-fun Float.format() = String.format("%.4f", this)
-
-/**
  * Implements a [Service] that records an action performed
  * by the user and stores it in the device for future use.
  */
@@ -69,7 +63,7 @@ class RecorderService : Service() {
 
     private lateinit var mBinder: RecorderBinder
     private lateinit var mSensorWindowProducer: SensorWindowProducer
-    private var mRecorderStorer: RecorderStorer? = null
+    private var mRecordingStorer: RecordingStorer? = null
     private lateinit var mRecorderPreferences: RecorderPreferences
 
     private lateinit var mTickerCoroutineJob: Job
@@ -85,7 +79,7 @@ class RecorderService : Service() {
         )
         mSensorWindowProducer.setOnNewWindowListener {
             Log.d(TAG, "onNewData: ")
-            mRecorderStorer?.recordWindow(it)
+            mRecordingStorer?.recordWindow(it)
         }
         mRecorderPreferences = RecorderPreferences(this)
 
@@ -111,7 +105,7 @@ class RecorderService : Service() {
                 Action.Type.valueOf(this)
             }
             try {
-                mRecorderStorer = RecorderStorer(this@RecorderService, action!!)
+                mRecordingStorer = RecordingStorer(this@RecorderService, action!!)
             } catch (ex: FileNotFoundException) {
                 ex.printStackTrace()
                 stopSelf()
@@ -122,7 +116,7 @@ class RecorderService : Service() {
             mRecorderPreferences.isSomeoneRecording = true
         }
 
-        Log.d(TAG, "onStartCommand: recording ${mRecorderStorer?.action} action")
+        Log.d(TAG, "onStartCommand: recording ${mRecordingStorer?.action} action")
         return START_NOT_STICKY
     }
 
@@ -132,17 +126,17 @@ class RecorderService : Service() {
     }
 
     private fun stopRecording() {
-        Log.d(TAG, "stopRecording: Stop recording ${mRecorderStorer?.action} action")
+        Log.d(TAG, "stopRecording: Stop recording ${mRecordingStorer?.action} action")
         mSensorWindowProducer.stopSensors()
-        mRecorderStorer?.stopRecording()
+        mRecordingStorer?.stopRecording()
 
         mRecorderPreferences.isSomeoneRecording = false
     }
 
     private fun saveRecordedData() {
-        Log.d(TAG, "saveRecordedData: Saving ${mRecorderStorer?.action} action")
+        Log.d(TAG, "saveRecordedData: Saving ${mRecordingStorer?.action} action")
         runBlocking {
-            mRecorderStorer?.saveRecording()
+            mRecordingStorer?.saveRecording()
         }
 
         WorkManager.getInstance(this).enqueue(
@@ -159,7 +153,7 @@ class RecorderService : Service() {
     }
 
     private fun discardRecordedData() {
-        Log.d(TAG, "discardRecordedData: Discarding ${mRecorderStorer?.action} action")
+        Log.d(TAG, "discardRecordedData: Discarding ${mRecordingStorer?.action} action")
         stopSelf()
     }
 }

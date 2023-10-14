@@ -23,8 +23,8 @@ class OtherActionRecorderWorker(
             20L,
             100
         )
-    private val mRecorderStorer: RecorderStorer =
-        RecorderStorer(
+    private val mRecordingStorer: RecordingStorer =
+        RecordingStorer(
             applicationContext,
             Action.Type.Other
         )
@@ -36,7 +36,7 @@ class OtherActionRecorderWorker(
 
         mSensorWindowProducer.setOnNewWindowListener {
             Log.d(TAG, "onNewData:")
-            mRecorderStorer.recordWindow(it)
+            mRecordingStorer.recordWindow(it)
         }
 
         if (mRecorderPreferences.isSomeoneRecording) {
@@ -54,9 +54,9 @@ class OtherActionRecorderWorker(
         Thread.sleep(60_000)
 
         mSensorWindowProducer.stopSensors()
-        mRecorderStorer.stopRecording()
+        mRecordingStorer.stopRecording()
         runBlocking {
-            mRecorderStorer.saveRecording()
+            mRecordingStorer.saveRecording()
         }
 
         mRecorderPreferences.isSomeoneRecording = false

@@ -11,7 +11,13 @@ import java.io.FileNotFoundException
 import java.io.OutputStreamWriter
 import java.util.UUID
 
-class RecorderStorer
+/**
+ * Extension function that formats a [Float]
+ * to 4 digits after the comma.
+ */
+fun Float.format() = String.format("%.4f", this)
+
+class RecordingStorer
 @Throws(FileNotFoundException::class)
 constructor(
     private val context: Context,
@@ -33,9 +39,9 @@ constructor(
         for (i in 0 until data.capacity() step 6) {
             mFileStream.write(
                 "\"${action.ordinal}\"," + "${data[i + 0].format()}," +
-                    "${data[i + 1].format()}," + "${data[i + 2].format()}," +
-                    "${data[i + 3].format()}," + "${data[i + 4].format()}," +
-                    "${data[i + 5].format()}\n"
+                        "${data[i + 1].format()}," + "${data[i + 2].format()}," +
+                        "${data[i + 3].format()}," + "${data[i + 4].format()}," +
+                        "${data[i + 5].format()}\n"
             )
         }
     }
