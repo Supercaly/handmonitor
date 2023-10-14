@@ -127,11 +127,11 @@ class RecorderViewModel(
             mapOf(
                 Action.Type.HandWash to Action.TimeRange(0L),
                 Action.Type.HandRub to Action.TimeRange(0L),
-                Action.Type.Eat to Action.TimeRange(0L),
+                Action.Type.Eating to Action.TimeRange(0L),
                 Action.Type.TeethBrush to Action.TimeRange(0L),
                 Action.Type.FaceWash to Action.TimeRange(0L),
-                Action.Type.Write to Action.TimeRange(0L),
-                Action.Type.Type to Action.TimeRange(0L),
+                Action.Type.Writing to Action.TimeRange(0L),
+                Action.Type.Typing to Action.TimeRange(0L),
                 Action.Type.Housework to Action.TimeRange(0L)
             )
         )

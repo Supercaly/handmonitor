@@ -12,11 +12,11 @@ class Action {
         Other,
         HandWash,
         HandRub,
-        Eat,
+        Eating,
         TeethBrush,
         FaceWash,
-        Write,
-        Type,
+        Writing,
+        Typing,
         Housework
     }
 

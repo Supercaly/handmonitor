@@ -33,7 +33,7 @@ class RecorderRepository(database: AppDatabase) {
                     acc + rec.durationMs
                 }
             },
-            database.recordingDao().getRecordingsForAction(Action.Type.Eat.name).mapLatest {
+            database.recordingDao().getRecordingsForAction(Action.Type.Eating.name).mapLatest {
                 it.fold(0L) { acc, rec ->
                     acc + rec.durationMs
                 }
@@ -50,12 +50,12 @@ class RecorderRepository(database: AppDatabase) {
                         acc + rec.durationMs
                     }
                 },
-            database.recordingDao().getRecordingsForAction(Action.Type.Write.name).mapLatest {
+            database.recordingDao().getRecordingsForAction(Action.Type.Writing.name).mapLatest {
                 it.fold(0L) { acc, rec ->
                     acc + rec.durationMs
                 }
             },
-            database.recordingDao().getRecordingsForAction(Action.Type.Type.name).mapLatest {
+            database.recordingDao().getRecordingsForAction(Action.Type.Typing.name).mapLatest {
                 it.fold(0L) { acc, rec ->
                     acc + rec.durationMs
                 }
@@ -70,11 +70,11 @@ class RecorderRepository(database: AppDatabase) {
             mapOf(
                 Action.Type.HandWash to Action.TimeRange(array[0]),
                 Action.Type.HandRub to Action.TimeRange(array[1]),
-                Action.Type.Eat to Action.TimeRange(array[2]),
+                Action.Type.Eating to Action.TimeRange(array[2]),
                 Action.Type.TeethBrush to Action.TimeRange(array[3]),
                 Action.Type.FaceWash to Action.TimeRange(array[4]),
-                Action.Type.Write to Action.TimeRange(array[5]),
-                Action.Type.Type to Action.TimeRange(array[6]),
+                Action.Type.Writing to Action.TimeRange(array[5]),
+                Action.Type.Typing to Action.TimeRange(array[6]),
                 Action.Type.Housework to Action.TimeRange(array[7])
             )
         }
