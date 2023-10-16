@@ -9,7 +9,9 @@ import androidx.work.BackoffPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.handmonitor.recorder.data.Action
-import com.handmonitor.sensorlib.v2.SensorWindowProducer
+import com.handmonitor.sensorlib.v1.SensorDataHandler
+import com.handmonitor.sensorlib.v1.SensorReaderHelper
+import com.handmonitor.sensorlib.v2.SensorWindow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -32,6 +34,7 @@ class RecorderService : Service() {
         private const val TAG = "RecorderService"
         private const val SAMPLING_WINDOW_SIZE = 100
         private const val SAMPLING_PERIOD_MS = 20L
+        private const val OTHER_ACTION_DELAY_TIME_M = 30L
     }
 
     /**
@@ -67,8 +70,8 @@ class RecorderService : Service() {
         fun discardRecordedData() = this@RecorderService.discardRecordedData()
     }
 
-    private lateinit var mBinder: RecorderBinder
-    private lateinit var mSensorWindowProducer: SensorWindowProducer
+    private lateinit var mRecorderBinder: RecorderBinder
+    private lateinit var mSensorReader: SensorReaderHelper
     private var mRecordingStorer: RecordingStorer? = null
     private lateinit var mRecorderPreferences: RecorderPreferences
 
@@ -78,18 +81,20 @@ class RecorderService : Service() {
     override fun onCreate() {
         Log.d(TAG, "onCreate: ")
 
-        mSensorWindowProducer = SensorWindowProducer(
+        mSensorReader = SensorReaderHelper(
             this@RecorderService,
-            SAMPLING_PERIOD_MS,
-            SAMPLING_WINDOW_SIZE
+            object : SensorDataHandler {
+                override fun onNewData(data: FloatArray) {
+                    Log.d(TAG, "onNewData: ")
+                    mRecordingStorer?.recordWindow(SensorWindow.fromArray(data))
+                }
+            },
+            SAMPLING_WINDOW_SIZE,
+            SAMPLING_PERIOD_MS.toInt()
         )
-        mSensorWindowProducer.setOnNewWindowListener {
-            Log.d(TAG, "onNewData: ")
-            mRecordingStorer?.recordWindow(it)
-        }
         mRecorderPreferences = RecorderPreferences(this)
 
-        mBinder = RecorderBinder()
+        mRecorderBinder = RecorderBinder()
         mTickerCoroutineJob = CoroutineScope(Dispatchers.IO).launch {
             withContext(Dispatchers.IO) {
                 while (true) {
@@ -102,11 +107,11 @@ class RecorderService : Service() {
 
     override fun onBind(intent: Intent?): IBinder {
         Log.d(TAG, "onBind: $intent")
-        return mBinder
+        return mRecorderBinder
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (!mSensorWindowProducer.isListening) {
+        if (!mSensorReader.isStarted) {
             val action = intent!!.getStringExtra("action-type")?.run {
                 Action.Type.valueOf(this)
             }
@@ -117,7 +122,7 @@ class RecorderService : Service() {
                 stopSelf()
                 return START_NOT_STICKY
             }
-            mSensorWindowProducer.startSensors()
+            mSensorReader.start()
 
             mRecorderPreferences.isSomeoneRecording = true
         }
@@ -133,7 +138,7 @@ class RecorderService : Service() {
 
     private fun stopRecording() {
         Log.d(TAG, "stopRecording: Stop recording ${mRecordingStorer?.action} action")
-        mSensorWindowProducer.stopSensors()
+        mSensorReader.stop()
         mRecordingStorer?.stopRecording()
 
         mRecorderPreferences.isSomeoneRecording = false
@@ -147,7 +152,7 @@ class RecorderService : Service() {
 
         WorkManager.getInstance(this).enqueue(
             OneTimeWorkRequestBuilder<OtherActionRecorderWorker>()
-                .setInitialDelay(Duration.ofMinutes(30))
+                .setInitialDelay(Duration.ofMinutes(OTHER_ACTION_DELAY_TIME_M))
                 .setBackoffCriteria(
                     BackoffPolicy.EXPONENTIAL,
                     Duration.ofMinutes(5)
