@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -98,6 +97,7 @@ class RecorderViewModel(
             Log.d(TAG, "onServiceDisconnected: ")
             mRecorderBinder = null
             mShowRecordingScreen.value = false
+            mCounterCoroutineJob?.cancel()
         }
     }
 
@@ -119,10 +119,10 @@ class RecorderViewModel(
     /**
      * Object that maps each recorded action kind with it's duration.
      */
-    val actionsTime: StateFlow<Map<Action.Type, Action.TimeRange>> =
+    val actions: StateFlow<Map<Action.Type, Action.TimeRange>> =
         recorderRepository.actionsTime.stateIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(),
+            SharingStarted.Eagerly,
             mapOf(
                 Action.Type.HandWash to Action.TimeRange(0L),
                 Action.Type.HandRub to Action.TimeRange(0L),

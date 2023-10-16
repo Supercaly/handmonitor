@@ -21,6 +21,13 @@ import com.handmonitor.recorder.database.AppDatabase
 import com.handmonitor.recorder.presentation.theme.HandMonitorTheme
 
 class MainActivity : ComponentActivity() {
+    private val mRecorderRepository: RecorderRepository by lazy {
+        RecorderRepository(
+            AppDatabase.getDatabase(
+                this
+            )
+        )
+    }
     private val mRecorderViewModel: RecorderViewModel by lazy {
         RecorderViewModel(
             mRecorderRepository,
@@ -32,13 +39,6 @@ class MainActivity : ComponentActivity() {
                 this.startService(intent)
                 this.bindService(intent, mRecorderViewModel.serviceConnection, 0)
             }
-        )
-    }
-    private val mRecorderRepository: RecorderRepository by lazy {
-        RecorderRepository(
-            AppDatabase.getDatabase(
-                this
-            )
         )
     }
 
@@ -88,7 +88,7 @@ fun RecorderApp(recorderViewModel: RecorderViewModel) {
             )
         } else {
             ActionsList(
-                actionsTime,
+                recorderViewModel.actions,
                 onActionSelected = { recorderViewModel.startRecording(it) }
             )
         }
