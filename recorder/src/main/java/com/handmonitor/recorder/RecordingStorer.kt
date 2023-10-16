@@ -9,13 +9,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
 import java.io.OutputStreamWriter
+import java.util.Locale
 import java.util.UUID
 
 /**
  * Extension function that formats a [Float]
  * to 4 digits after the comma.
  */
-fun Float.format() = String.format("%.4f", this)
+fun Float.format() = String.format(Locale.US, "%.4f", this)
 
 class RecordingStorer
 @Throws(FileNotFoundException::class)
@@ -38,7 +39,7 @@ constructor(
         val data = window.buffer
         for (i in 0 until data.capacity() step 6) {
             mFileStream.write(
-                "\"${action.ordinal}\"," + "${data[i + 0].format()}," +
+                "${action.ordinal}," + "${data[i + 0].format()}," +
                         "${data[i + 1].format()}," + "${data[i + 2].format()}," +
                         "${data[i + 3].format()}," + "${data[i + 4].format()}," +
                         "${data[i + 5].format()}\n"
@@ -59,6 +60,7 @@ constructor(
                         0,
                         action.name,
                         mFileName,
+                        mStartTime,
                         mRecordingDuration
                     )
                 )
