@@ -1,16 +1,17 @@
 package com.handmonitor.recorder.presentation
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material.Chip
 import androidx.wear.compose.material.ChipDefaults
 import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
-import com.handmonitor.recorder.R
 import com.handmonitor.recorder.data.Action
 
 @Composable
@@ -41,7 +42,9 @@ fun ActionButton(
                 tint = MaterialTheme.colors.secondary
             )
         },
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 4.dp),
         colors = ChipDefaults.chipColors(
             backgroundColor = MaterialTheme.colors.secondary.copy(alpha = 0.2f)
         )
@@ -53,29 +56,3 @@ private fun formatTime(timeMs: Long): String {
     val sec = (timeMs / 1_000) % 60
     return "%d".format(min) + if (sec > 0) ".%1d".format(sec) else ""
 }
-
-private fun getTitleFromAction(action: Action.Type) =
-    when (action) {
-        Action.Type.HandWash -> R.string.action_hand_wash
-        Action.Type.HandRub -> R.string.action_hand_rub
-        Action.Type.Eating -> R.string.action_eat
-        Action.Type.TeethBrush -> R.string.action_teeth_brush
-        Action.Type.FaceWash -> R.string.action_face_wash
-        Action.Type.Writing -> R.string.action_write
-        Action.Type.Typing -> R.string.action_type
-        Action.Type.Housework -> R.string.action_housework
-        else -> R.string.action_other
-    }
-
-private fun getIconFromAction(action: Action.Type) =
-    when (action) {
-        Action.Type.HandWash -> R.drawable.ic_wash
-        Action.Type.HandRub -> R.drawable.ic_rub
-        Action.Type.Eating -> R.drawable.ic_eat
-        Action.Type.TeethBrush -> R.drawable.ic_teethbrush
-        Action.Type.FaceWash -> R.drawable.ic_facewash
-        Action.Type.Writing -> R.drawable.ic_write
-        Action.Type.Typing -> R.drawable.ic_keyboard
-        Action.Type.Housework -> R.drawable.ic_housework
-        else -> R.drawable.ic_cancel
-    }
