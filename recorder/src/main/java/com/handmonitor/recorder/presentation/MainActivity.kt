@@ -36,7 +36,8 @@ class MainActivity : ComponentActivity() {
                 // Start service and bind to it
                 val intent = Intent(this, RecorderService::class.java)
                 intent.putExtra("action-type", it.name)
-                this.startService(intent)
+//                this.startService(intent)
+                this.startForegroundService(intent)
                 this.bindService(intent, mRecorderViewModel.serviceConnection, 0)
             }
         )

@@ -1,6 +1,10 @@
 package com.handmonitor.recorder
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
@@ -35,6 +39,8 @@ class RecorderService : Service() {
         private const val SAMPLING_WINDOW_SIZE = 100
         private const val SAMPLING_PERIOD_MS = 20L
         private const val OTHER_ACTION_DELAY_TIME_M = 30L
+
+        private const val NOTIFICATION_CHANNEL_ID = "sensor_channel"
     }
 
     /**
@@ -111,6 +117,8 @@ class RecorderService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        startForeground(5, getNotification())
+
         if (!mSensorReader.isStarted) {
             val action = intent!!.getStringExtra("action-type")?.run {
                 Action.Type.valueOf(this)
@@ -134,14 +142,23 @@ class RecorderService : Service() {
     override fun onDestroy() {
         Log.d(TAG, "onDestroy: ")
         mTickerCoroutineJob.cancel()
+        mRecorderPreferences.isSomeoneRecording = false
+
+        if (mSensorReader.isStarted) {
+            Log.e(
+                TAG,
+                "onDestroy: We are quitting the service, but the sensors are still reading... stopping them"
+            )
+            mSensorReader.stop()
+            mRecordingStorer?.stopRecording()
+            runBlocking { mRecordingStorer?.saveRecording() }
+        }
     }
 
     private fun stopRecording() {
         Log.d(TAG, "stopRecording: Stop recording ${mRecordingStorer?.action} action")
         mSensorReader.stop()
         mRecordingStorer?.stopRecording()
-
-        mRecorderPreferences.isSomeoneRecording = false
     }
 
     private fun saveRecordedData() {
@@ -150,6 +167,7 @@ class RecorderService : Service() {
             mRecordingStorer?.saveRecording()
         }
 
+        Log.i(TAG, "saveRecordedData: Enqueue other action recorder worker")
         WorkManager.getInstance(this).enqueue(
             OneTimeWorkRequestBuilder<OtherActionRecorderWorker>()
                 .setInitialDelay(Duration.ofMinutes(OTHER_ACTION_DELAY_TIME_M))
@@ -166,5 +184,27 @@ class RecorderService : Service() {
     private fun discardRecordedData() {
         Log.d(TAG, "discardRecordedData: Discarding ${mRecordingStorer?.action} action")
         stopSelf()
+    }
+
+    private fun getNotification(): Notification {
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val channel = NotificationChannel(
+            NOTIFICATION_CHANNEL_ID,
+            "Sensor Service notifications channel",
+            NotificationManager.IMPORTANCE_HIGH
+        ).let {
+            it.description = "Sensor Service channel"
+            it.enableLights(true)
+            it
+        }
+        notificationManager.createNotificationChannel(channel)
+
+        return Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
+            .setContentTitle("Sensor Service")
+            .setContentText("This service is used to collect sensor events")
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setTicker("Ticker")
+            .build()
     }
 }
