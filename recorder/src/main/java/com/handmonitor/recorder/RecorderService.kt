@@ -43,7 +43,13 @@ class RecorderService : Service() {
          * Returns the time in milliseconds elapsed since the start
          * of the current recording.
          */
-        val recordingTime: StateFlow<Long> = mRecordingTime.asStateFlow()
+        val elapsedTime: StateFlow<Long> = mElapsedTime.asStateFlow()
+
+        /**
+         * Returns the action being recorded or null.
+         */
+        val recordedAction: Action.Type?
+            get() = mRecordingStorer?.action
 
         /**
          * Stop the recording of the current action.
@@ -67,7 +73,7 @@ class RecorderService : Service() {
     private lateinit var mRecorderPreferences: RecorderPreferences
 
     private lateinit var mTickerCoroutineJob: Job
-    private val mRecordingTime = MutableStateFlow(0L)
+    private val mElapsedTime = MutableStateFlow(0L)
 
     override fun onCreate() {
         Log.d(TAG, "onCreate: ")
@@ -87,7 +93,7 @@ class RecorderService : Service() {
         mTickerCoroutineJob = CoroutineScope(Dispatchers.IO).launch {
             withContext(Dispatchers.IO) {
                 while (true) {
-                    mRecordingTime.value += 1_000L
+                    mElapsedTime.value += 1_000L
                     delay(1_000L)
                 }
             }

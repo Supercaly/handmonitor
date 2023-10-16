@@ -3,14 +3,14 @@
     <string name="recorder_service_description">Service that records actions from device sensors</string>
 
     <string name="action_other">other</string>
-    <string name="action_hand_wash">hand wash</string>
-    <string name="action_hand_rub">hand rub</string>
-    <string name="action_eat">eat</string>
-    <string name="action_teeth_brush">brush teeth</string>
-    <string name="action_face_wash">face wash</string>
-    <string name="action_write">write</string>
-    <string name="action_type">type</string>
-    <string name="action_housework">housework</string>
+    <string name="action_hand_wash">Hand Wash</string>
+    <string name="action_hand_rub">Hand Rub</string>
+    <string name="action_eat">Eating</string>
+    <string name="action_teeth_brush">Brush teeth</string>
+    <string name="action_face_wash">Face Wash</string>
+    <string name="action_write">Writing</string>
+    <string name="action_type">Typing</string>
+    <string name="action_housework">Housework</string>
 
     <string name="action_list_title">Record Action</string>
     <string name="recording_screen_title">recording</string>

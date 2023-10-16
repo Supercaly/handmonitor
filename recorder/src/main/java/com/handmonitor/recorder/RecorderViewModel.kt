@@ -62,10 +62,11 @@ class RecorderViewModel(
             RecorderViewModel(repository, recorderPreferences, onStartService) as T
     }
 
-    private var mCounterCoroutineJob: Job? = null
     private var mRecorderBinder: RecorderService.RecorderBinder? = null
     private val mShowRecordingScreen = MutableStateFlow(mRecorderBinder != null)
-    private val mRecordingTime = MutableStateFlow(1000L)
+    private var mCounterCoroutineJob: Job? = null
+    private val mElapsedTimeString = MutableStateFlow("00:00")
+    private val mRecordedAction = MutableSharedFlow<Action.Type>(1)
     private val mShowConflictToast = MutableSharedFlow<Unit>(0)
 
     /**
@@ -76,13 +77,18 @@ class RecorderViewModel(
             Log.d(TAG, "onServiceConnected: ")
             mRecorderBinder = service as RecorderService.RecorderBinder
             mShowRecordingScreen.value = true
+            if (mRecorderBinder?.recordedAction != null) {
+                mRecordedAction.tryEmit(mRecorderBinder!!.recordedAction!!)
+            }
             if (mCounterCoroutineJob != null) {
                 mCounterCoroutineJob!!.cancel()
             }
             mCounterCoroutineJob = viewModelScope.launch {
                 withContext(Dispatchers.IO) {
-                    mRecorderBinder?.recordingTime?.collect {
-                        mRecordingTime.value = it
+                    mRecorderBinder?.elapsedTime?.collect {
+                        val m = ((it / 1_000) / 60).toInt()
+                        val s = ((it / 1_000) % 60).toInt()
+                        mElapsedTimeString.value = "%02d:%02d".format(m, s)
                     }
                 }
             }
@@ -106,16 +112,9 @@ class RecorderViewModel(
      * A String representing the time elapsed since the start
      * of a recording.
      */
-    val recordingTimeString: StateFlow<String> =
-        mRecordingTime.map {
-            val m = ((it / 1_000) / 60).toInt()
-            val s = ((it / 1_000) % 60).toInt()
-            "%02d:%02d".format(m, s)
-        }.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(),
-            "00:00"
-        )
+    val elapsedTimeString: StateFlow<String> = mElapsedTimeString.asStateFlow()
+
+    val recordedAction: SharedFlow<Action.Type?> = mRecordedAction.asSharedFlow()
 
     /**
      * Object that maps each recorded action kind with it's duration.

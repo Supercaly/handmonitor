@@ -70,7 +70,6 @@ class MainActivity : ComponentActivity() {
 fun RecorderApp(recorderViewModel: RecorderViewModel) {
     val context = LocalContext.current
     val showRecordingScreen by recorderViewModel.showRecordingScreen.collectAsState()
-    val actionsTime by recorderViewModel.actionsTime.collectAsState()
 
     LaunchedEffect(Unit) {
         recorderViewModel.showConflictToast.collect {
@@ -81,7 +80,8 @@ fun RecorderApp(recorderViewModel: RecorderViewModel) {
     HandMonitorTheme {
         if (showRecordingScreen) {
             RecordingScreen(
-                recorderViewModel.recordingTimeString,
+                recorderViewModel.elapsedTimeString,
+                recorderViewModel.recordedAction,
                 onStopRecording = { recorderViewModel.stopRecording() },
                 onConfirm = { recorderViewModel.confirmSave() },
                 onDiscard = { recorderViewModel.discardSave() }
